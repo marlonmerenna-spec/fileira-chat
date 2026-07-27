@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+<title>Fileira · salas de bate-papo com avatar 3D</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@google/model-viewer@3.5.0/dist/model-viewer.min.js" type="module"></script>
+<script src="/socket.io/socket.io.js"></script>
+<style>
+  :root{
+    --bg: #14142B;
+    --bg-soft: #1B1B3A;
+    --panel: #1E1E3F;
+    --panel-hover: #262650;
+    --border: #33305C;
+    --text: #F5F3FF;
+    --text-muted: #9C97C4;
+    --accent: #FF4D8D;
+    --accent-soft: rgba(255, 77, 141, 0.18);
+    --mint: #4DFFCE;
+    --radius: 18px;
+    --font-display: 'Fredoka', sans-serif;
+    --font-body: 'Inter', sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    background: radial-gradient(circle at 20% 0%, #23234f 0%, var(--bg) 55%);
+    color: var(--text);
+    font-family: var(--font-body);
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+  }
+  :focus-visible{ outline: 2px solid var(--mint); outline-offset: 2px; }
+  h1,h2,h3{ font-family: var(--font-display); margin:0; }
+  .screen{ flex:1; display:none; flex-direction:column; }
+  .screen.active{ display:flex; }
+  .wrap{ max-width: 720px; margin:0 auto; width:100%; padding: 20px; flex:1; display:flex; flex-direction:column; }
+
+  /* ---------- Topbar ---------- */
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 14px 20px; border-bottom:1px solid var(--border);
+    background: var(--bg-soft);
+  }
+  .brand{ display:flex; align-items:center; gap:10px; }
+  .brand-dot{ width:12px; height:12px; border-radius:50%; background: var(--accent); box-shadow: 0 0 12px var(--accent); }
+  .brand h1{ font-size: 20px; letter-spacing: 0.3px; }
+
+  /* ---------- Perfil / avatar ---------- */
+  .center-stage{ align-items:center; justify-content:center; text-align:center; gap: 18px; }
+  .tagline{ color: var(--text-muted); font-size:15px; max-width: 380px; margin: 0 auto; }
+  input[type=text]{
+    width:100%; max-width: 320px; padding: 14px 16px; border-radius: 14px;
+    border: 1px solid var(--border); background: var(--panel); color: var(--text);
+    font-family: var(--font-body); font-size:15px;
+  }
+  input[type=text]::placeholder{ color: var(--text-muted); }
+  .btn{
+    font-family: var(--font-display); font-weight:600; font-size:15px;
+    padding: 13px 22px; border-radius: 14px; border:none; cursor:pointer;
+    background: var(--panel); color: var(--text); border: 1px solid var(--border);
+    transition: transform .12s ease, background .12s ease;
+  }
+  .btn:hover{ background: var(--panel-hover); transform: translateY(-1px); }
+  .btn:active{ transform: translateY(0); }
+  .btn-primary{ background: var(--accent); border-color: var(--accent); color: #1A0512; }
+  .btn-primary:hover{ background: #ff6ba0; }
+  .btn-ghost{ background: transparent; }
+  .btn-row{ display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
+
+  .avatar-picker{
+    width: 220px; height: 220px; border-radius: 24px; border: 2px dashed var(--border);
+    display:flex; align-items:center; justify-content:center; overflow:hidden;
+    background: var(--panel); position:relative;
+  }
+  .avatar-picker model-viewer{ width:100%; height:100%; --poster-color: transparent; }
+  .avatar-placeholder{ color: var(--text-muted); font-size: 13px; padding: 12px; }
+
+  #rpmFrame{ width:100%; height: 78vh; border:none; border-radius: var(--radius); background: #fff; }
+  .rpm-overlay{ position:fixed; inset:0; background: rgba(10,10,24,0.85); z-index:50; display:none; flex-direction:column; padding: 16px; }
+  .rpm-overlay.active{ display:flex; }
+  .rpm-close{ align-self:flex-end; margin-bottom:10px; }
+
+  /* ---------- Lobby ---------- */
+  .section-title{ display:flex; align-items:baseline; justify-content:space-between; margin: 22px 0 12px; }
+  .section-title h2{ font-size: 18px; }
+  .section-title span{ color: var(--text-muted); font-size:13px; }
+
+  .room-list{ display:flex; flex-direction:column; gap:10px; }
+  .room-card{
+    display:flex; align-items:center; justify-content:space-between; gap: 12px;
+    background: var(--panel); border:1px solid var(--border); border-radius: var(--radius);
+    padding: 14px 16px; cursor:pointer; transition: border-color .15s ease, transform .1s ease;
+  }
+  .room-card:hover{ border-color: var(--accent); transform: translateY(-1px); }
+  .room-card .info h3{ font-size:16px; }
+  .room-card .info p{ margin: 3px 0 0; color: var(--text-muted); font-size: 13px; }
+  .pill{
+    font-size:12px; color: var(--mint); border:1px solid rgba(77,255,206,0.35);
+    background: rgba(77,255,206,0.08); padding: 4px 10px; border-radius: 100px; white-space:nowrap;
+  }
+
+  .private-box{
+    background: var(--bg-soft); border:1px solid var(--border); border-radius: var(--radius);
+    padding: 16px; display:flex; flex-direction:column; gap:10px; margin-top: 10px;
+  }
+  .private-box .row{ display:flex; gap:8px; }
+  .private-box input{ flex:1; padding: 10px 12px; border-radius: 10px; }
+
+  /* ---------- Sala de chat ---------- */
+  .room-header{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding: 12px 16px; border-bottom: 1px solid var(--border); background: var(--bg-soft);
+  }
+  .room-header h2{ font-size:17px; }
+  .room-header .sub{ color: var(--text-muted); font-size:12px; }
+
+  /* fileira de avatares — o elemento de assinatura */
+  .avatar-row{
+    display:flex; gap: 14px; padding: 16px; overflow-x:auto;
+    background: linear-gradient(180deg, var(--bg-soft), var(--bg));
+    border-bottom: 1px solid var(--border);
+  }
+  .avatar-slot{
+    flex: 0 0 auto; width: 74px; text-align:center;
+  }
+  .avatar-bust{
+    width: 74px; height: 74px; border-radius: 50%; background: var(--panel);
+    border: 2px solid var(--border); overflow:hidden; position:relative;
+    animation: bob 3.2s ease-in-out infinite;
+  }
+  .avatar-slot:nth-child(2n) .avatar-bust{ animation-delay: -1.1s; }
+  .avatar-slot:nth-child(3n) .avatar-bust{ animation-delay: -2s; }
+  @keyframes bob{
+    0%, 100%{ transform: translateY(0); }
+    50%{ transform: translateY(-4px); }
+  }
+  .avatar-bust.talking{
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px var(--accent-soft), 0 0 18px var(--accent);
+  }
+  .avatar-bust model-viewer{ width:100%; height:100%; }
+  .avatar-bust .fallback{
+    width:100%; height:100%; display:flex; align-items:center; justify-content:center;
+    font-family: var(--font-display); font-size: 22px; background: linear-gradient(135deg, #3a3570, #22204a);
+    color: var(--text);
+  }
+  .avatar-slot .name{ font-size:11px; color: var(--text-muted); margin-top:6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+  .chat-area{ flex:1; display:flex; flex-direction:column; overflow:hidden; }
+  .messages{ flex:1; overflow-y:auto; padding: 14px 16px; display:flex; flex-direction:column; gap:10px; }
+  .msg{ max-width: 78%; display:flex; flex-direction:column; gap:2px; }
+  .msg.mine{ align-self:flex-end; align-items:flex-end; }
+  .msg .author{ font-size:11px; color: var(--text-muted); padding: 0 4px; }
+  .msg .bubble{
+    background: var(--panel); border:1px solid var(--border); border-radius: 16px 16px 16px 4px;
+    padding: 9px 13px; font-size: 14.5px; line-height:1.4; word-break: break-word;
+  }
+  .msg.mine .bubble{ background: var(--accent); color:#1A0512; border-color: var(--accent); border-radius: 16px 16px 4px 16px; }
+  .system-msg{ text-align:center; color: var(--text-muted); font-size:12px; margin: 4px 0; }
+
+  .composer{ display:flex; gap:8px; padding: 12px 16px; border-top:1px solid var(--border); background: var(--bg-soft); }
+  .composer input{ flex:1; padding: 12px 14px; border-radius: 14px; }
+  .typing-indicator{ height: 16px; padding: 0 16px; font-size:12px; color: var(--text-muted); }
+
+  ::-webkit-scrollbar{ width:8px; height:8px; }
+  ::-webkit-scrollbar-thumb{ background: var(--border); border-radius: 8px; }
+
+  @media (max-width: 480px){
+    .wrap{ padding: 14px; }
+    .avatar-picker{ width: 170px; height: 170px; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="brand"><span class="brand-dot"></span><h1>Fileira</h1></div>
+    <div id="topbarSub" class="sub" style="color:var(--text-muted); font-size:12px;"></div>
+  </div>
+
+  <!-- TELA 1: Perfil + avatar -->
+  <section id="screen-profile" class="screen active">
+    <div class="wrap center-stage">
+      <h2>Crie seu avatar</h2>
+      <p class="tagline">Tire uma foto ou escolha uma selfie. A gente transforma num avatar 3D pra te representar nas salas.</p>
+
+      <div class="avatar-picker" id="avatarPreviewBox">
+        <span class="avatar-placeholder">Nenhum avatar ainda</span>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" id="btnOpenRPM">📸 Criar avatar com foto</button>
+        <button class="btn btn-ghost" id="btnSkipAvatar">Pular por agora</button>
+      </div>
+
+      <input type="text" id="nameInput" placeholder="Como quer ser chamado(a)?" maxlength="24" />
+      <button class="btn btn-primary" id="btnContinue">Entrar nas salas →</button>
+    </div>
+  </section>
+
+  <!-- TELA 2: Lobby -->
+  <section id="screen-lobby" class="screen">
+    <div class="wrap">
+      <div class="section-title">
+        <h2>Salas públicas</h2>
+        <span id="onlineHint">conectando…</span>
+      </div>
+      <div class="room-list" id="publicRoomList"></div>
+
+      <div class="section-title">
+        <h2>Salas privadas</h2>
+      </div>
+      <div class="private-box">
+        <div class="row">
+          <input type="text" id="privateRoomName" placeholder="Nome da sala nova" />
+          <button class="btn" id="btnCreatePrivate">Criar</button>
+        </div>
+        <div class="row">
+          <input type="text" id="joinCodeInput" placeholder="Código de convite" style="text-transform:uppercase" />
+          <button class="btn" id="btnJoinCode">Entrar</button>
+        </div>
+        <div id="privateCreatedMsg" style="font-size:13px; color: var(--mint);"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TELA 3: Sala -->
+  <section id="screen-room" class="screen">
+    <div class="room-header">
+      <div>
+        <h2 id="roomTitle">Sala</h2>
+        <div class="sub" id="roomSub"></div>
+      </div>
+      <button class="btn btn-ghost" id="btnLeaveRoom">← Sair</button>
+    </div>
+
+    <div class="avatar-row" id="avatarRow"></div>
+
+    <div class="chat-area">
+      <div class="messages" id="messages"></div>
+      <div class="typing-indicator" id="typingIndicator"></div>
+      <div class="composer">
+        <input type="text" id="messageInput" placeholder="Escreva uma mensagem…" maxlength="500" />
+        <button class="btn btn-primary" id="btnSend">Enviar</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Overlay do criador de avatar (Ready Player Me) -->
+  <div class="rpm-overlay" id="rpmOverlay">
+    <button class="btn rpm-close" id="btnCloseRPM">Fechar ✕</button>
+    <iframe id="rpmFrame" allow="camera *; microphone *"></iframe>
+  </div>
+
+<script>
+const socket = io();
+
+// -------- Estado local --------
+let myProfile = { name: '', avatarUrl: null };
+let currentRoom = null;
+let usersInRoom = {};
+let typingTimeout = null;
+
+// -------- Elementos --------
+const screens = {
+  profile: document.getElementById('screen-profile'),
+  lobby: document.getElementById('screen-lobby'),
+  room: document.getElementById('screen-room'),
+};
+function showScreen(name){
+  Object.values(screens).forEach(s => s.classList.remove('active'));
+  screens[name].classList.add('active');
+}
+
+// -------- Avatar (Ready Player Me) --------
+const RPM_SUBDOMAIN = 'demo'; // subdomínio de teste gratuito da Ready Player Me
+const rpmOverlay = document.getElementById('rpmOverlay');
+const rpmFrame = document.getElementById('rpmFrame');
+
+document.getElementById('btnOpenRPM').addEventListener('click', () => {
+  rpmFrame.src = `https://${RPM_SUBDOMAIN}.readyplayer.me/avatar?frameApi&bodyType=halfbody&quickStart=true`;
+  rpmOverlay.classList.add('active');
+});
+document.getElementById('btnCloseRPM').addEventListener('click', () => {
+  rpmOverlay.classList.remove('active');
+  rpmFrame.src = '';
+});
+document.getElementById('btnSkipAvatar').addEventListener('click', () => {
+  myProfile.avatarUrl = null;
+  renderAvatarPreview();
+});
+
+window.addEventListener('message', (event) => {
+  const data = parseRPMMessage(event);
+  if (!data) return;
+  if (data.eventName === 'v1.frame.ready') {
+    rpmFrame.contentWindow.postMessage(
+      JSON.stringify({ target: 'readyplayerme', type: 'subscribe', eventName: 'v1.**' }),
+      '*'
+    );
+  }
+  if (data.eventName === 'v1.avatar.exported') {
+    myProfile.avatarUrl = data.data.url;
+    renderAvatarPreview();
+    rpmOverlay.classList.remove('active');
+    rpmFrame.src = '';
+  }
+});
+function parseRPMMessage(event){
+  try {
+    const json = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+    if (json?.source !== 'readyplayerme') return null;
+    return json;
+  } catch(e){ return null; }
+}
+function renderAvatarPreview(){
+  const box = document.getElementById('avatarPreviewBox');
+  if (myProfile.avatarUrl){
+    box.innerHTML = `<model-viewer src="${myProfile.avatarUrl}" camera-controls auto-rotate disable-zoom shadow-intensity="0"></model-viewer>`;
+  } else {
+    box.innerHTML = `<span class="avatar-placeholder">Sem avatar — vamos usar suas iniciais</span>`;
+  }
+}
+
+// -------- Perfil --------
+document.getElementById('btnContinue').addEventListener('click', () => {
+  const name = document.getElementById('nameInput').value.trim() || 'Visitante';
+  myProfile.name = name;
+  socket.emit('set_profile', myProfile);
+  socket.emit('get_rooms');
+  showScreen('lobby');
+});
+
+// -------- Lobby --------
+document.getElementById('onlineHint').textContent = 'atualizando lista de salas…';
+
+socket.on('room_list', (list) => {
+  const el = document.getElementById('publicRoomList');
+  document.getElementById('onlineHint').textContent = `${list.length} salas ativas`;
+  el.innerHTML = list.map(r => `
+    <div class="room-card" data-room="${r.id}">
+      <div class="info">
+        <h3>${escapeHtml(r.name)}</h3>
+        <p>${escapeHtml(r.topic || '')}</p>
+      </div>
+      <span class="pill">${r.userCount} online</span>
+    </div>
+  `).join('');
+  el.querySelectorAll('.room-card').forEach(card => {
+    card.addEventListener('click', () => joinRoom(card.dataset.room));
+  });
+});
+
+document.getElementById('btnCreatePrivate').addEventListener('click', () => {
+  const name = document.getElementById('privateRoomName').value.trim();
+  socket.emit('create_private_room', { name });
+});
+socket.on('private_room_created', ({ roomId, code, name }) => {
+  document.getElementById('privateCreatedMsg').textContent = `Sala "${name}" criada! Código: ${code}`;
+  joinRoom(roomId);
+});
+document.getElementById('btnJoinCode').addEventListener('click', () => {
+  const code = document.getElementById('joinCodeInput').value.trim().toUpperCase();
+  if (!code) return;
+  joinRoom('p_' + code);
+});
+
+function joinRoom(roomId){
+  socket.emit('join_room', { roomId });
+}
+
+// -------- Sala --------
+socket.on('join_error', (msg) => alert(msg));
+
+socket.on('room_joined', ({ room, users, history }) => {
+  currentRoom = room;
+  usersInRoom = {};
+  users.forEach(u => usersInRoom[u.id] = u);
+  document.getElementById('roomTitle').textContent = room.name;
+  document.getElementById('roomSub').textContent = room.isPrivate ? 'Sala privada' : (room.topic || '');
+  document.getElementById('messages').innerHTML = '';
+  history.forEach(renderMessage);
+  renderAvatarRow();
+  showScreen('room');
+  scrollToBottom();
+});
+
+socket.on('user_list', (users) => {
+  usersInRoom = {};
+  users.forEach(u => usersInRoom[u.id] = u);
+  renderAvatarRow();
+});
+
+socket.on('user_joined', (u) => {
+  addSystemMessage(`${u.name} entrou na sala`);
+});
+socket.on('user_left', ({ id }) => {
+  const u = usersInRoom[id];
+  if (u) addSystemMessage(`${u.name} saiu da sala`);
+});
+
+socket.on('chat_message', (msg) => {
+  renderMessage(msg);
+  scrollToBottom();
+  pulseAvatar(msg.userId);
+});
+
+socket.on('user_typing', ({ id, isTyping }) => {
+  const u = usersInRoom[id];
+  const el = document.getElementById('typingIndicator');
+  el.textContent = (isTyping && u) ? `${u.name} está digitando…` : '';
+});
+
+document.getElementById('btnLeaveRoom').addEventListener('click', () => {
+  socket.emit('leave_room');
+  socket.emit('get_rooms');
+  showScreen('lobby');
+});
+
+const messageInput = document.getElementById('messageInput');
+document.getElementById('btnSend').addEventListener('click', sendMessage);
+messageInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') sendMessage();
+  socket.emit('typing', true);
+  clearTimeout(typingTimeout);
+  typingTimeout = setTimeout(() => socket.emit('typing', false), 1200);
+});
+function sendMessage(){
+  const text = messageInput.value.trim();
+  if (!text) return;
+  socket.emit('send_message', { text });
+  messageInput.value = '';
+}
+
+function renderAvatarRow(){
+  const row = document.getElementById('avatarRow');
+  row.innerHTML = Object.values(usersInRoom).map(u => `
+    <div class="avatar-slot" data-user="${u.id}">
+      <div class="avatar-bust" id="bust-${u.id}">
+        ${u.avatarUrl
+          ? `<model-viewer src="${u.avatarUrl}" camera-controls disable-zoom auto-rotate shadow-intensity="0"></model-viewer>`
+          : `<div class="fallback">${initials(u.name)}</div>`}
+      </div>
+      <div class="name">${escapeHtml(u.name)}</div>
+    </div>
+  `).join('');
+}
+function pulseAvatar(userId){
+  const bust = document.getElementById('bust-' + userId);
+  if (!bust) return;
+  bust.classList.add('talking');
+  setTimeout(() => bust.classList.remove('talking'), 900);
+}
+
+function renderMessage(msg){
+  const mine = msg.userId === socket.id;
+  const el = document.createElement('div');
+  el.className = 'msg' + (mine ? ' mine' : '');
+  el.innerHTML = `
+    <div class="author">${mine ? '' : escapeHtml(msg.name)}</div>
+    <div class="bubble">${escapeHtml(msg.text)}</div>
+  `;
+  document.getElementById('messages').appendChild(el);
+}
+function addSystemMessage(text){
+  const el = document.createElement('div');
+  el.className = 'system-msg';
+  el.textContent = text;
+  document.getElementById('messages').appendChild(el);
+  scrollToBottom();
+}
+function scrollToBottom(){
+  const m = document.getElementById('messages');
+  m.scrollTop = m.scrollHeight;
+}
+function initials(name){
+  return (name || '?').split(' ').map(p => p[0]).join('').slice(0,2).toUpperCase();
+}
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str ?? '';
+  return div.innerHTML;
+}
+</script>
+</body>
+</html>
