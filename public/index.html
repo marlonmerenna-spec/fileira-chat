@@ -81,7 +81,6 @@
   .avatar-picker model-viewer{ width:100%; height:100%; --poster-color: transparent; }
   .avatar-placeholder{ color: var(--text-muted); font-size: 13px; padding: 12px; }
 
-  #rpmFrame{ width:100%; height: 78vh; border:none; border-radius: var(--radius); background: #fff; }
   .rpm-overlay{ position:fixed; inset:0; background: rgba(10,10,24,0.85); z-index:50; display:none; flex-direction:column; padding: 16px; }
   .rpm-overlay.active{ display:flex; }
   .rpm-close{ align-self:flex-end; margin-bottom:10px; }
@@ -255,7 +254,7 @@
   <!-- Overlay do criador de avatar (Ready Player Me) -->
   <div class="rpm-overlay" id="rpmOverlay">
     <button class="btn rpm-close" id="btnCloseRPM">Fechar ✕</button>
-    <iframe id="rpmFrame" allow="camera *; microphone *"></iframe>
+    <div id="avaturnContainer" style="width:100%; height:78vh; border-radius:var(--radius); overflow:hidden; background:#fff;"></div>
   </div>
 
 <script>
@@ -278,47 +277,41 @@ function showScreen(name){
   screens[name].classList.add('active');
 }
 
-// -------- Avatar (Ready Player Me) --------
-const RPM_SUBDOMAIN = 'demo'; // subdomínio de teste gratuito da Ready Player Me
+// -------- Avatar (Avaturn) --------
+// O Ready Player Me encerrou o serviço público em 2026 (foi comprado pela Netflix).
+// Trocamos pro Avaturn, que oferece o mesmo tipo de fluxo: selfie -> avatar 3D.
 const rpmOverlay = document.getElementById('rpmOverlay');
-const rpmFrame = document.getElementById('rpmFrame');
+const avaturnContainer = document.getElementById('avaturnContainer');
+let avaturnSdk = null;
+let avaturnLoading = false;
 
-document.getElementById('btnOpenRPM').addEventListener('click', () => {
-  rpmFrame.src = `https://${RPM_SUBDOMAIN}.readyplayer.me/avatar?frameApi&bodyType=halfbody`;
+document.getElementById('btnOpenRPM').addEventListener('click', async () => {
   rpmOverlay.classList.add('active');
+  if (avaturnSdk || avaturnLoading) return; // já carregado ou carregando
+  avaturnLoading = true;
+  try {
+    const { AvaturnSDK } = await import('https://cdn.jsdelivr.net/npm/@avaturn/sdk/dist/index.js');
+    avaturnSdk = new AvaturnSDK();
+    await avaturnSdk.init(avaturnContainer, { url: 'https://demo.avaturn.dev' });
+    avaturnSdk.on('export', (data) => {
+      myProfile.avatarUrl = data.url;
+      renderAvatarPreview();
+      rpmOverlay.classList.remove('active');
+    });
+  } catch (err) {
+    console.error('Erro ao carregar o criador de avatar:', err);
+    avaturnContainer.innerHTML = '<p style="padding:20px;color:#333;">Não foi possível carregar o criador de avatar agora. Tenta de novo em instantes.</p>';
+  } finally {
+    avaturnLoading = false;
+  }
 });
 document.getElementById('btnCloseRPM').addEventListener('click', () => {
   rpmOverlay.classList.remove('active');
-  rpmFrame.src = '';
 });
 document.getElementById('btnSkipAvatar').addEventListener('click', () => {
   myProfile.avatarUrl = null;
   renderAvatarPreview();
 });
-
-window.addEventListener('message', (event) => {
-  const data = parseRPMMessage(event);
-  if (!data) return;
-  if (data.eventName === 'v1.frame.ready') {
-    rpmFrame.contentWindow.postMessage(
-      JSON.stringify({ target: 'readyplayerme', type: 'subscribe', eventName: 'v1.**' }),
-      '*'
-    );
-  }
-  if (data.eventName === 'v1.avatar.exported') {
-    myProfile.avatarUrl = data.data.url;
-    renderAvatarPreview();
-    rpmOverlay.classList.remove('active');
-    rpmFrame.src = '';
-  }
-});
-function parseRPMMessage(event){
-  try {
-    const json = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
-    if (json?.source !== 'readyplayerme') return null;
-    return json;
-  } catch(e){ return null; }
-}
 function renderAvatarPreview(){
   const box = document.getElementById('avatarPreviewBox');
   if (myProfile.avatarUrl){
