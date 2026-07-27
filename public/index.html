@@ -284,7 +284,7 @@ const rpmOverlay = document.getElementById('rpmOverlay');
 const rpmFrame = document.getElementById('rpmFrame');
 
 document.getElementById('btnOpenRPM').addEventListener('click', () => {
-  rpmFrame.src = `https://${RPM_SUBDOMAIN}.readyplayer.me/avatar?frameApi&bodyType=halfbody&quickStart=true`;
+  rpmFrame.src = `https://${RPM_SUBDOMAIN}.readyplayer.me/avatar?frameApi&bodyType=halfbody`;
   rpmOverlay.classList.add('active');
 });
 document.getElementById('btnCloseRPM').addEventListener('click', () => {
