@@ -85,6 +85,128 @@
   .rpm-overlay.active{ display:flex; }
   .rpm-close{ align-self:flex-end; margin-bottom:10px; }
 
+  /* ---------- Navegação de abas (Feed / Salas) ---------- */
+  .tab-nav{
+    display:flex; gap: 6px; padding: 10px 20px 0; background: var(--bg-soft); border-bottom: 1px solid var(--border);
+  }
+  .tab-btn{
+    font-family: var(--font-display); font-weight:600; font-size:14px;
+    padding: 10px 16px; border-radius: 12px 12px 0 0; border:none; cursor:pointer;
+    background: transparent; color: var(--text-muted);
+  }
+  .tab-btn.active{ background: var(--bg); color: var(--text); }
+
+  /* ---------- Feed ---------- */
+  .composer-card{
+    background: var(--panel); border:1px solid var(--border); border-radius: var(--radius);
+    padding: 14px; display:flex; flex-direction:column; gap:10px; margin-bottom: 18px;
+  }
+  .composer-card textarea{
+    width:100%; resize: vertical; min-height: 56px; padding: 10px 12px; border-radius: 12px;
+    border: 1px solid var(--border); background: var(--bg-soft); color: var(--text);
+    font-family: var(--font-body); font-size:14px;
+  }
+  .composer-actions{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .img-preview{ position:relative; max-width: 160px; }
+  .img-preview img{ width:100%; border-radius: 12px; display:block; }
+  .img-preview button{
+    position:absolute; top:-8px; right:-8px; background: var(--accent); color:#1A0512;
+    border:none; border-radius: 50%; width:24px; height:24px; cursor:pointer; font-size:12px;
+  }
+  .post-list{ display:flex; flex-direction:column; gap:14px; padding-bottom: 24px; }
+  .post-card{
+    background: var(--panel); border:1px solid var(--border); border-radius: var(--radius); padding: 14px;
+  }
+  .post-head{ display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+  .post-avatar{ width:38px; height:38px; border-radius:50%; overflow:hidden; background: var(--bg-soft); flex:0 0 auto; }
+  .post-avatar model-viewer{ width:100%; height:100%; }
+  .post-avatar .fallback{ width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:13px; font-family: var(--font-display); background: linear-gradient(135deg, #3a3570, #22204a); }
+  .post-head .who{ display:flex; flex-direction:column; }
+  .post-head .who .n{ font-size:14px; font-weight:600; }
+  .post-head .who .t{ font-size:11px; color: var(--text-muted); }
+  .post-text{ font-size:14.5px; line-height:1.5; margin: 4px 0 10px; white-space:pre-wrap; word-break:break-word; }
+  .post-image{ width:100%; border-radius:14px; margin-bottom:10px; display:block; }
+  .post-actions{ display:flex; gap:8px; }
+  .like-btn{
+    display:flex; align-items:center; gap:6px; background: var(--bg-soft); border:1px solid var(--border);
+    color: var(--text-muted); border-radius:100px; padding:7px 14px; font-size:13px; cursor:pointer;
+  }
+  .like-btn.liked{ color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+  .empty-feed{ text-align:center; color: var(--text-muted); font-size:13px; padding: 30px 0; }
+
+  /* ---------- Status (tipo MSN) ---------- */
+  .status-btn{
+    display:flex; align-items:center; gap:6px; background: var(--panel); border:1px solid var(--border);
+    color: var(--text); border-radius:100px; padding:6px 12px; font-size:12px; cursor:pointer; position:relative;
+  }
+  .status-dropdown{
+    position:absolute; top: calc(100% + 8px); right:0; background: var(--panel); border:1px solid var(--border);
+    border-radius: 14px; padding:6px; display:none; flex-direction:column; min-width: 180px; z-index:40;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+  }
+  .status-dropdown.active{ display:flex; }
+  .status-option{
+    display:flex; align-items:center; gap:8px; padding:9px 10px; border-radius:10px; cursor:pointer; font-size:13px;
+    color: var(--text); background:transparent; border:none; text-align:left;
+  }
+  .status-option:hover{ background: var(--panel-hover); }
+
+  /* badge de humor sobre o avatar */
+  .with-badge{ position:relative; }
+  .mood-badge{
+    position:absolute; bottom:-2px; right:-2px; font-size:13px; background: var(--bg-soft);
+    border-radius:50%; width:20px; height:20px; display:flex; align-items:center; justify-content:center;
+    border: 1px solid var(--border);
+  }
+
+  /* ---------- Mensagens (estilo MSN) ---------- */
+  .contact-list{ display:flex; flex-direction:column; gap:8px; }
+  .contact-card{
+    display:flex; align-items:center; gap:12px; background: var(--panel); border:1px solid var(--border);
+    border-radius: var(--radius); padding: 10px 14px; cursor:pointer;
+  }
+  .contact-card:hover{ border-color: var(--accent); }
+  .contact-avatar{ width:42px; height:42px; border-radius:50%; overflow:hidden; background: var(--bg-soft); flex:0 0 auto; }
+  .contact-avatar model-viewer{ width:100%; height:100%; }
+  .contact-avatar .fallback{ width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:14px; font-family: var(--font-display); background: linear-gradient(135deg, #3a3570, #22204a); }
+  .contact-info .n{ font-size:14px; font-weight:600; }
+  .contact-info .s{ font-size:11px; color: var(--text-muted); }
+  .empty-contacts{ text-align:center; color: var(--text-muted); font-size:13px; padding: 30px 0; }
+
+  .chat-view{ display:none; flex-direction:column; flex:1; overflow:hidden; }
+  .chat-view.active{ display:flex; }
+  .dm-header{ display:flex; align-items:center; gap:10px; padding: 12px 16px; border-bottom:1px solid var(--border); background: var(--bg-soft); }
+  .dm-header h3{ font-size:15px; }
+
+  /* ---------- Tela de perfil ---------- */
+  .profile-view-card{ display:flex; flex-direction:column; align-items:center; gap:12px; padding: 30px 0; }
+  .profile-big-avatar{ width:150px; height:150px; border-radius:50%; overflow:hidden; background: var(--panel); border:2px solid var(--border); position:relative; }
+  .profile-big-avatar model-viewer{ width:100%; height:100%; }
+  .profile-big-avatar .fallback{ width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:40px; font-family: var(--font-display); background: linear-gradient(135deg, #3a3570, #22204a); }
+  .profile-big-avatar .mood-badge{ width:34px; height:34px; font-size:20px; bottom:4px; right:4px; }
+  .profile-status-pill{ font-size:13px; color: var(--text-muted); background: var(--panel); border:1px solid var(--border); border-radius:100px; padding:6px 14px; }
+
+  /* ---------- Criador de avatar 2D ---------- */
+  .avatar2d-preview{
+    width: 160px; height:160px; border-radius:50%; overflow:hidden; background: var(--panel);
+    border: 2px solid var(--border); margin: 0 auto;
+  }
+  .avatar2d-preview svg{ width:100%; height:100%; display:block; }
+  .avatar2d-tabs{ display:flex; gap:6px; overflow-x:auto; padding: 4px 0 10px; }
+  .avatar2d-tabs button{
+    flex:0 0 auto; font-family: var(--font-body); font-size:12.5px; font-weight:600;
+    padding: 8px 14px; border-radius: 100px; border:1px solid var(--border); background: var(--panel);
+    color: var(--text-muted); cursor:pointer; white-space:nowrap;
+  }
+  .avatar2d-tabs button.active{ background: var(--accent); border-color: var(--accent); color:#1A0512; }
+  .swatch-grid{ display:flex; flex-wrap:wrap; gap:10px; padding: 6px 0 16px; }
+  .swatch{
+    width:44px; height:44px; border-radius:12px; border: 2px solid var(--border); cursor:pointer;
+    display:flex; align-items:center; justify-content:center; background: var(--panel); overflow:hidden;
+  }
+  .swatch.selected{ border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+  .swatch svg{ width:100%; height:100%; }
+
   /* ---------- Lobby ---------- */
   .section-title{ display:flex; align-items:baseline; justify-content:space-between; margin: 22px 0 12px; }
   .section-title h2{ font-size: 18px; }
@@ -180,7 +302,10 @@
 
   <div class="topbar">
     <div class="brand"><span class="brand-dot"></span><h1>Fileira</h1></div>
-    <div id="topbarSub" class="sub" style="color:var(--text-muted); font-size:12px;"></div>
+    <div class="status-btn" id="statusBtn">
+      <span id="statusEmoji">🟢</span><span id="statusLabel">Disponível</span>
+      <div class="status-dropdown" id="statusDropdown"></div>
+    </div>
   </div>
 
   <!-- TELA 1: Perfil + avatar -->
@@ -195,6 +320,7 @@
 
       <div class="btn-row">
         <button class="btn btn-primary" id="btnOpenRPM">📸 Criar avatar com foto</button>
+        <button class="btn" id="btnOpen2D">🎨 Criar avatar do zero</button>
         <button class="btn btn-ghost" id="btnSkipAvatar">Pular por agora</button>
       </div>
 
@@ -203,8 +329,34 @@
     </div>
   </section>
 
-  <!-- TELA 2: Lobby -->
+  <!-- TELA 2: Feed -->
+  <section id="screen-feed" class="screen">
+    <div class="tab-nav">
+      <button class="tab-btn active" id="tabFeed">Feed</button>
+      <button class="tab-btn" id="tabLobbyFromFeed">Salas</button>
+      <button class="tab-btn" id="tabMessagesFromFeed">Mensagens</button>
+    </div>
+    <div class="wrap">
+      <div class="composer-card">
+        <textarea id="postText" placeholder="O que você está pensando?" maxlength="500"></textarea>
+        <div id="imgPreviewBox"></div>
+        <input type="file" id="postImageInput" accept="image/*" style="display:none" />
+        <div class="composer-actions">
+          <button class="btn btn-ghost" id="btnAddImage">🖼️ Foto</button>
+          <button class="btn btn-primary" id="btnPublish">Publicar</button>
+        </div>
+      </div>
+      <div class="post-list" id="postList"></div>
+    </div>
+  </section>
+
+  <!-- TELA 3: Lobby -->
   <section id="screen-lobby" class="screen">
+    <div class="tab-nav">
+      <button class="tab-btn" id="tabFeedFromLobby">Feed</button>
+      <button class="tab-btn active" id="tabLobby">Salas</button>
+      <button class="tab-btn" id="tabMessagesFromLobby">Mensagens</button>
+    </div>
     <div class="wrap">
       <div class="section-title">
         <h2>Salas públicas</h2>
@@ -251,6 +403,64 @@
     </div>
   </section>
 
+  <!-- TELA: Mensagens (estilo MSN) -->
+  <section id="screen-messages" class="screen">
+    <div class="tab-nav">
+      <button class="tab-btn" id="tabFeedFromMsg">Feed</button>
+      <button class="tab-btn" id="tabLobbyFromMsg">Salas</button>
+      <button class="tab-btn active" id="tabMessages">Mensagens</button>
+    </div>
+
+    <!-- lista de contatos -->
+    <div class="wrap" id="contactListView">
+      <div class="section-title"><h2>Conversas</h2><span id="onlineCountHint"></span></div>
+      <div class="contact-list" id="contactList"></div>
+    </div>
+
+    <!-- conversa individual -->
+    <div class="chat-view" id="dmChatView">
+      <div class="dm-header">
+        <button class="btn btn-ghost" id="btnBackToContacts">←</button>
+        <div class="contact-avatar" id="dmHeaderAvatar"></div>
+        <h3 id="dmHeaderName"></h3>
+      </div>
+      <div class="messages" id="dmMessages"></div>
+      <div class="composer">
+        <input type="text" id="dmInput" placeholder="Escreva uma mensagem…" maxlength="1000" />
+        <button class="btn btn-primary" id="btnDmSend">Enviar</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- TELA: Perfil de um usuário -->
+  <section id="screen-profile-view" class="screen">
+    <div class="room-header">
+      <div><h2>Perfil</h2></div>
+      <button class="btn btn-ghost" id="btnBackFromProfile">← Voltar</button>
+    </div>
+    <div class="wrap">
+      <div class="profile-view-card">
+        <div class="profile-big-avatar" id="profileBigAvatar"></div>
+        <h2 id="profileName"></h2>
+        <span class="profile-status-pill" id="profileStatusPill"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- TELA: Criador de avatar 2D (monte-o-boneco) -->
+  <section id="screen-avatar2d" class="screen">
+    <div class="room-header">
+      <div><h2>Monte seu avatar</h2></div>
+      <button class="btn btn-ghost" id="btnBackFrom2D">← Voltar</button>
+    </div>
+    <div class="wrap">
+      <div class="avatar2d-preview" id="avatar2dPreview"></div>
+      <div class="avatar2d-tabs" id="avatar2dTabs"></div>
+      <div class="swatch-grid" id="avatar2dSwatches"></div>
+      <button class="btn btn-primary" id="btnConfirm2D">Usar este avatar</button>
+    </div>
+  </section>
+
   <!-- Overlay do criador de avatar (Ready Player Me) -->
   <div class="rpm-overlay" id="rpmOverlay">
     <button class="btn rpm-close" id="btnCloseRPM">Fechar ✕</button>
@@ -261,7 +471,7 @@
 const socket = io();
 
 // -------- Estado local --------
-let myProfile = { name: '', avatarUrl: null };
+let myProfile = { name: '', avatarUrl: null, avatarType: null, avatarConfig: null, status: 'disponivel' };
 let currentRoom = null;
 let usersInRoom = {};
 let typingTimeout = null;
@@ -269,8 +479,12 @@ let typingTimeout = null;
 // -------- Elementos --------
 const screens = {
   profile: document.getElementById('screen-profile'),
+  feed: document.getElementById('screen-feed'),
   lobby: document.getElementById('screen-lobby'),
   room: document.getElementById('screen-room'),
+  messages: document.getElementById('screen-messages'),
+  profileView: document.getElementById('screen-profile-view'),
+  avatar2d: document.getElementById('screen-avatar2d'),
 };
 function showScreen(name){
   Object.values(screens).forEach(s => s.classList.remove('active'));
@@ -295,6 +509,8 @@ document.getElementById('btnOpenRPM').addEventListener('click', async () => {
     await avaturnSdk.init(avaturnContainer, { url: 'https://demo.avaturn.dev' });
     avaturnSdk.on('export', (data) => {
       myProfile.avatarUrl = data.url;
+      myProfile.avatarType = '3d';
+      myProfile.avatarConfig = null;
       renderAvatarPreview();
       rpmOverlay.classList.remove('active');
     });
@@ -310,15 +526,232 @@ document.getElementById('btnCloseRPM').addEventListener('click', () => {
 });
 document.getElementById('btnSkipAvatar').addEventListener('click', () => {
   myProfile.avatarUrl = null;
+  myProfile.avatarType = null;
+  myProfile.avatarConfig = null;
   renderAvatarPreview();
 });
 function renderAvatarPreview(){
   const box = document.getElementById('avatarPreviewBox');
-  if (myProfile.avatarUrl){
-    box.innerHTML = `<model-viewer src="${myProfile.avatarUrl}" camera-controls auto-rotate disable-zoom shadow-intensity="0"></model-viewer>`;
+  if (myProfile.avatarType){
+    box.innerHTML = avatarMediaHtml(myProfile);
   } else {
     box.innerHTML = `<span class="avatar-placeholder">Sem avatar — vamos usar suas iniciais</span>`;
   }
+}
+
+// ==================== AVATAR 2D (monte-o-boneco) ====================
+const AVATAR2D_PARTS = {
+  skin: {
+    label: 'Pele',
+    options: [
+      { id: 'p1', color: '#FCE0C0' }, { id: 'p2', color: '#F0C199' },
+      { id: 'p3', color: '#C98A5C' }, { id: 'p4', color: '#8D5A3B' },
+      { id: 'p5', color: '#5A3825' },
+    ],
+  },
+  hair: {
+    label: 'Cabelo',
+    options: [
+      { id: 'none',   label: 'Careca' },
+      { id: 'short',  label: 'Curto' },
+      { id: 'long',   label: 'Longo' },
+      { id: 'curly',  label: 'Cacheado' },
+      { id: 'mohawk', label: 'Moicano' },
+    ],
+  },
+  hairColor: {
+    label: 'Cor do cabelo',
+    options: [
+      { id: 'h1', color: '#2B2118' }, { id: 'h2', color: '#7A4B25' },
+      { id: 'h3', color: '#D4A017' }, { id: 'h4', color: '#B33B3B' },
+      { id: 'h5', color: '#E8E8F0' }, { id: 'h6', color: '#FF4D8D' },
+    ],
+  },
+  outfit: {
+    label: 'Roupa',
+    options: [
+      { id: 'round', label: 'Gola redonda' },
+      { id: 'vneck', label: 'Gola V' },
+      { id: 'hoodie', label: 'Moletom' },
+    ],
+  },
+  outfitColor: {
+    label: 'Cor da roupa',
+    options: [
+      { id: 'o1', color: '#FF4D8D' }, { id: 'o2', color: '#4DFFCE' },
+      { id: 'o3', color: '#5B8DEF' }, { id: 'o4', color: '#F5F3FF' },
+      { id: 'o5', color: '#33305C' }, { id: 'o6', color: '#F5A623' },
+    ],
+  },
+  accessory: {
+    label: 'Acessório',
+    options: [
+      { id: 'none', label: 'Nenhum' },
+      { id: 'glasses', label: 'Óculos' },
+      { id: 'sunglasses', label: 'Óculos escuro' },
+      { id: 'hat', label: 'Boné' },
+      { id: 'earrings', label: 'Brincos' },
+    ],
+  },
+};
+const DEFAULT_AVATAR2D_CONFIG = {
+  skin: 'p1', hair: 'short', hairColor: 'h1', outfit: 'round', outfitColor: 'o1', accessory: 'none',
+};
+
+function hairSvg(style, color){
+  switch(style){
+    case 'short': return `<path d="M18 40 Q20 8 50 8 Q80 8 82 40 Q70 20 50 20 Q30 20 18 40 Z" fill="${color}"/>`;
+    case 'long': return `<path d="M18 40 Q20 8 50 8 Q80 8 82 40 Q70 20 50 20 Q30 20 18 40 Z" fill="${color}"/>
+      <path d="M16 38 Q14 70 20 88 L30 88 Q24 60 26 38 Z" fill="${color}"/>
+      <path d="M84 38 Q86 70 80 88 L70 88 Q76 60 74 38 Z" fill="${color}"/>`;
+    case 'curly': return `<circle cx="26" cy="26" r="9" fill="${color}"/><circle cx="40" cy="16" r="10" fill="${color}"/>
+      <circle cx="58" cy="14" r="10" fill="${color}"/><circle cx="74" cy="24" r="9" fill="${color}"/>
+      <circle cx="50" cy="22" r="11" fill="${color}"/>`;
+    case 'mohawk': return `<path d="M42 6 L58 6 L54 34 L46 34 Z" fill="${color}"/>`;
+    default: return '';
+  }
+}
+function eyesSvg(status){
+  switch(status){
+    case 'animado': return `<path d="M33 46 Q38 39 43 46" stroke="#2B2118" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M57 46 Q62 39 67 46" stroke="#2B2118" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+    case 'ausente': return `<path d="M33 46 L43 46" stroke="#2B2118" stroke-width="3" stroke-linecap="round"/>
+      <path d="M57 46 L67 46" stroke="#2B2118" stroke-width="3" stroke-linecap="round"/>`;
+    case 'desanimado': return `<ellipse cx="38" cy="47" rx="3" ry="3.4" fill="#2B2118"/><ellipse cx="62" cy="47" rx="3" ry="3.4" fill="#2B2118"/>
+      <path d="M32 42 Q38 40 44 42" stroke="#2B2118" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <path d="M56 42 Q62 40 68 42" stroke="#2B2118" stroke-width="2.5" fill="none" stroke-linecap="round"/>`;
+    case 'triste': return `<ellipse cx="38" cy="48" rx="3" ry="3.4" fill="#2B2118"/><ellipse cx="62" cy="48" rx="3" ry="3.4" fill="#2B2118"/>`;
+    default: return `<ellipse cx="38" cy="46" rx="3" ry="3.6" fill="#2B2118"/><ellipse cx="62" cy="46" rx="3" ry="3.6" fill="#2B2118"/>`;
+  }
+}
+function mouthSvg(status){
+  switch(status){
+    case 'animado': return `<path d="M36 60 Q50 76 64 60 Q50 68 36 60 Z" fill="#8B2E4A"/>`;
+    case 'ocupado': case 'trabalhando': return `<path d="M38 62 L62 62" stroke="#8B2E4A" stroke-width="3" stroke-linecap="round"/>`;
+    case 'ausente': return `<ellipse cx="50" cy="62" rx="4" ry="3" fill="#8B2E4A"/>`;
+    case 'desanimado': return `<path d="M38 65 Q50 58 62 65" stroke="#8B2E4A" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+    case 'triste': return `<path d="M37 67 Q50 57 63 67" stroke="#8B2E4A" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+    default: return `<path d="M38 60 Q50 68 62 60" stroke="#8B2E4A" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+  }
+}
+function extrasSvg(status){
+  // detalhe extra por status — o "chorando de verdade" que foi pedido lá atrás
+  if (status === 'triste') {
+    return `<path d="M33 50 Q30 58 33 64 Q37 60 35 50 Z" fill="#5B8DEF" opacity="0.85"/>`;
+  }
+  if (status === 'ausente') {
+    return `<text x="72" y="20" font-size="12" fill="#9C97C4" font-family="sans-serif">z z</text>`;
+  }
+  return '';
+}
+function outfitSvg(style, color){
+  switch(style){
+    case 'vneck': return `<path d="M10 100 L10 82 Q50 70 90 82 L90 100 Z" fill="${color}"/><path d="M40 82 L50 92 L60 82 L54 78 L50 84 L46 78 Z" fill="#00000022"/>`;
+    case 'hoodie': return `<path d="M6 100 L6 80 Q50 64 94 80 L94 100 Z" fill="${color}"/><path d="M32 80 Q50 92 68 80 L68 88 Q50 100 32 88 Z" fill="#00000022"/>`;
+    default: return `<path d="M10 100 L10 82 Q50 72 90 82 L90 100 Z" fill="${color}"/>`;
+  }
+}
+function accessorySvg(kind){
+  switch(kind){
+    case 'glasses': return `<circle cx="38" cy="46" r="9" fill="none" stroke="#2B2118" stroke-width="2.5"/>
+      <circle cx="62" cy="46" r="9" fill="none" stroke="#2B2118" stroke-width="2.5"/>
+      <path d="M47 46 L53 46" stroke="#2B2118" stroke-width="2.5"/>`;
+    case 'sunglasses': return `<ellipse cx="38" cy="46" rx="10" ry="8" fill="#1A1A1A" opacity="0.9"/>
+      <ellipse cx="62" cy="46" rx="10" ry="8" fill="#1A1A1A" opacity="0.9"/>
+      <path d="M48 45 L52 45" stroke="#1A1A1A" stroke-width="3"/>`;
+    case 'hat': return `<path d="M16 32 Q20 6 50 6 Q80 6 84 32 Q66 22 50 22 Q34 22 16 32 Z" fill="#33305C"/>
+      <ellipse cx="50" cy="32" rx="34" ry="6" fill="#26234a"/>`;
+    case 'earrings': return `<circle cx="18" cy="52" r="2.6" fill="#F5A623"/><circle cx="82" cy="52" r="2.6" fill="#F5A623"/>`;
+    default: return '';
+  }
+}
+function skinColor(id){
+  const opt = AVATAR2D_PARTS.skin.options.find(o => o.id === id);
+  return opt ? opt.color : AVATAR2D_PARTS.skin.options[0].color;
+}
+function colorById(category, id){
+  const opt = AVATAR2D_PARTS[category].options.find(o => o.id === id);
+  return opt ? opt.color : AVATAR2D_PARTS[category].options[0].color;
+}
+
+function buildAvatarSVG(config, status){
+  const cfg = { ...DEFAULT_AVATAR2D_CONFIG, ...(config || {}) };
+  const skin = skinColor(cfg.skin);
+  const hColor = colorById('hairColor', cfg.hairColor);
+  const oColor = colorById('outfitColor', cfg.outfitColor);
+  return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <rect width="100" height="100" fill="#00000000"/>
+    ${outfitSvg(cfg.outfit, oColor)}
+    <circle cx="50" cy="44" r="30" fill="${skin}"/>
+    ${eyesSvg(status)}
+    ${mouthSvg(status)}
+    ${extrasSvg(status)}
+    ${hairSvg(cfg.hair, hColor)}
+    ${cfg.accessory !== 'hat' ? '' : ''}
+    ${accessorySvg(cfg.accessory)}
+  </svg>`;
+}
+
+// Renderização unificada de avatar (3D via Avaturn OU 2D monte-o-boneco OU iniciais)
+function avatarMediaHtml(u){
+  if (u.avatarType === '2d' && u.avatarConfig){
+    return buildAvatarSVG(u.avatarConfig, u.status);
+  }
+  if (u.avatarType === '3d' && u.avatarUrl){
+    return `<model-viewer src="${u.avatarUrl}" camera-controls disable-zoom auto-rotate shadow-intensity="0"></model-viewer>`;
+  }
+  return `<div class="fallback">${initials(u.name)}</div>`;
+}
+
+// -------- Customizador do avatar 2D --------
+let avatar2dConfig = { ...DEFAULT_AVATAR2D_CONFIG };
+let avatar2dActiveTab = 'skin';
+
+document.getElementById('btnOpen2D').addEventListener('click', () => {
+  avatar2dConfig = { ...DEFAULT_AVATAR2D_CONFIG };
+  avatar2dActiveTab = 'skin';
+  renderAvatar2DScreen();
+  showScreen('avatar2d');
+});
+document.getElementById('btnBackFrom2D').addEventListener('click', () => showScreen('profile'));
+document.getElementById('btnConfirm2D').addEventListener('click', () => {
+  myProfile.avatarType = '2d';
+  myProfile.avatarConfig = { ...avatar2dConfig };
+  myProfile.avatarUrl = null;
+  renderAvatarPreview();
+  showScreen('profile');
+});
+
+function renderAvatar2DScreen(){
+  document.getElementById('avatar2dPreview').innerHTML = buildAvatarSVG(avatar2dConfig, myProfile.status);
+  const tabsEl = document.getElementById('avatar2dTabs');
+  tabsEl.innerHTML = Object.entries(AVATAR2D_PARTS).map(([key, cat]) => `
+    <button class="${key === avatar2dActiveTab ? 'active' : ''}" data-tab="${key}">${cat.label}</button>
+  `).join('');
+  tabsEl.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      avatar2dActiveTab = btn.dataset.tab;
+      renderAvatar2DScreen();
+    });
+  });
+  renderAvatar2DSwatches();
+}
+function renderAvatar2DSwatches(){
+  const cat = AVATAR2D_PARTS[avatar2dActiveTab];
+  const grid = document.getElementById('avatar2dSwatches');
+  grid.innerHTML = cat.options.map(opt => {
+    const selected = avatar2dConfig[avatar2dActiveTab] === opt.id ? 'selected' : '';
+    const inner = opt.color
+      ? `<div style="width:100%;height:100%;background:${opt.color};"></div>`
+      : `<span style="font-size:10px; text-align:center; color:var(--text); padding:2px;">${opt.label}</span>`;
+    return `<div class="swatch ${selected}" data-id="${opt.id}" title="${opt.label || ''}">${inner}</div>`;
+  }).join('');
+  grid.querySelectorAll('.swatch').forEach(sw => {
+    sw.addEventListener('click', () => {
+      avatar2dConfig[avatar2dActiveTab] = sw.dataset.id;
+      renderAvatar2DScreen();
+    });
+  });
 }
 
 // -------- Perfil --------
@@ -327,8 +760,79 @@ document.getElementById('btnContinue').addEventListener('click', () => {
   myProfile.name = name;
   socket.emit('set_profile', myProfile);
   socket.emit('get_rooms');
-  showScreen('lobby');
+  socket.emit('get_posts');
+  socket.emit('get_online_users');
+  showScreen('feed');
 });
+
+// -------- Navegação entre abas --------
+document.getElementById('tabLobbyFromFeed').addEventListener('click', () => showScreen('lobby'));
+document.getElementById('tabFeedFromLobby').addEventListener('click', () => showScreen('feed'));
+document.getElementById('tabMessagesFromFeed').addEventListener('click', () => showScreen('messages'));
+document.getElementById('tabMessagesFromLobby').addEventListener('click', () => showScreen('messages'));
+document.getElementById('tabFeedFromMsg').addEventListener('click', () => showScreen('feed'));
+document.getElementById('tabLobbyFromMsg').addEventListener('click', () => showScreen('lobby'));
+document.getElementById('btnBackFromProfile').addEventListener('click', () => showScreen(profileViewReturnScreen || 'feed'));
+
+// -------- Status (tipo MSN) --------
+const STATUSES = {
+  disponivel:  { label: 'Disponível',  emoji: '🟢' },
+  ocupado:     { label: 'Ocupado',     emoji: '🔴' },
+  trabalhando: { label: 'Trabalhando', emoji: '💼' },
+  ausente:     { label: 'Ausente',     emoji: '🌙' },
+  animado:     { label: 'Animado',     emoji: '😄' },
+  desanimado:  { label: 'Desanimado',  emoji: '😔' },
+  triste:      { label: 'Triste',      emoji: '😢' },
+};
+function moodEmoji(status){ return (STATUSES[status] || STATUSES.disponivel).emoji; }
+function moodLabel(status){ return (STATUSES[status] || STATUSES.disponivel).label; }
+function badgeHtml(status){
+  return status ? `<span class="mood-badge">${moodEmoji(status)}</span>` : '';
+}
+
+const statusDropdown = document.getElementById('statusDropdown');
+statusDropdown.innerHTML = Object.entries(STATUSES).map(([key, s]) => `
+  <button class="status-option" data-status="${key}">${s.emoji} ${s.label}</button>
+`).join('');
+document.getElementById('statusBtn').addEventListener('click', (e) => {
+  if (e.target.closest('.status-option')) return;
+  statusDropdown.classList.toggle('active');
+});
+statusDropdown.querySelectorAll('.status-option').forEach(opt => {
+  opt.addEventListener('click', () => {
+    const status = opt.dataset.status;
+    myProfile.status = status;
+    document.getElementById('statusEmoji').textContent = moodEmoji(status);
+    document.getElementById('statusLabel').textContent = moodLabel(status);
+    socket.emit('set_status', { status });
+    statusDropdown.classList.remove('active');
+  });
+});
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('#statusBtn')) statusDropdown.classList.remove('active');
+});
+
+// -------- Usuários online (cache p/ perfis e contatos) --------
+let onlineUsersMap = {};
+socket.on('online_users', (list) => {
+  onlineUsersMap = {};
+  list.forEach(u => onlineUsersMap[u.id] = u);
+  renderContactList();
+  if (currentRoom) renderAvatarRow(); // atualiza os "rostinhos" na sala se o humor de alguém mudou
+  if (screens.feed.classList.contains('active') || allPosts.length) renderPosts(); // atualiza badges no feed
+});
+
+// -------- Ver perfil de alguém --------
+let profileViewReturnScreen = 'feed';
+function openProfile(id, fallbackName, fallbackAvatar) {
+  profileViewReturnScreen = Object.keys(screens).find(k => screens[k].classList.contains('active')) || 'feed';
+  const u = onlineUsersMap[id] || { name: fallbackName, avatarUrl: fallbackAvatar, avatarType: fallbackAvatar ? '3d' : null, avatarConfig: null, status: null };
+  document.getElementById('profileName').textContent = u.name || 'Visitante';
+  document.getElementById('profileStatusPill').textContent = u.status ? `${moodEmoji(u.status)} ${moodLabel(u.status)}` : 'Status indisponível';
+  const box = document.getElementById('profileBigAvatar');
+  box.innerHTML = avatarMediaHtml(u) + badgeHtml(u.status);
+  showScreen('profileView');
+}
 
 // -------- Lobby --------
 document.getElementById('onlineHint').textContent = 'atualizando lista de salas…';
@@ -433,16 +937,25 @@ function sendMessage(){
 
 function renderAvatarRow(){
   const row = document.getElementById('avatarRow');
-  row.innerHTML = Object.values(usersInRoom).map(u => `
+  row.innerHTML = Object.values(usersInRoom).map(u => {
+    const live = onlineUsersMap[u.id] || u;
+    const status = live.status || null;
+    return `
     <div class="avatar-slot" data-user="${u.id}">
-      <div class="avatar-bust" id="bust-${u.id}">
-        ${u.avatarUrl
-          ? `<model-viewer src="${u.avatarUrl}" camera-controls disable-zoom auto-rotate shadow-intensity="0"></model-viewer>`
-          : `<div class="fallback">${initials(u.name)}</div>`}
+      <div class="avatar-bust with-badge" id="bust-${u.id}">
+        ${avatarMediaHtml(live)}
+        ${badgeHtml(status)}
       </div>
       <div class="name">${escapeHtml(u.name)}</div>
     </div>
-  `).join('');
+  `;
+  }).join('');
+  row.querySelectorAll('.avatar-slot').forEach(slot => {
+    slot.addEventListener('click', () => {
+      const u = usersInRoom[slot.dataset.user];
+      if (u) openProfile(slot.dataset.user, u.name, u.avatarUrl);
+    });
+  });
 }
 function pulseAvatar(userId){
   const bust = document.getElementById('bust-' + userId);
@@ -480,6 +993,212 @@ function escapeHtml(str){
   div.textContent = str ?? '';
   return div.innerHTML;
 }
+
+// ==================== FEED ====================
+let pendingImage = null; // dataURL já redimensionada, pronta pra publicar
+let allPosts = []; // cache local, mais recentes primeiro
+
+function resizeImage(file, maxWidth = 720, quality = 0.72){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('Falha ao ler o arquivo'));
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('Falha ao carregar a imagem'));
+      img.onload = () => {
+        const scale = Math.min(1, maxWidth / img.width);
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(img.width * scale);
+        canvas.height = Math.round(img.height * scale);
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+document.getElementById('btnAddImage').addEventListener('click', () => {
+  document.getElementById('postImageInput').click();
+});
+document.getElementById('postImageInput').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  try {
+    pendingImage = await resizeImage(file);
+    document.getElementById('imgPreviewBox').innerHTML = `
+      <div class="img-preview">
+        <img src="${pendingImage}" />
+        <button id="btnRemoveImg" title="Remover">✕</button>
+      </div>`;
+    document.getElementById('btnRemoveImg').addEventListener('click', () => {
+      pendingImage = null;
+      document.getElementById('imgPreviewBox').innerHTML = '';
+      e.target.value = '';
+    });
+  } catch (err) {
+    console.error(err);
+    alert('Não consegui processar essa imagem, tenta outra.');
+  }
+});
+
+document.getElementById('btnPublish').addEventListener('click', () => {
+  const textEl = document.getElementById('postText');
+  const text = textEl.value.trim();
+  if (!text && !pendingImage) return;
+  socket.emit('create_post', { text, image: pendingImage });
+  textEl.value = '';
+  pendingImage = null;
+  document.getElementById('imgPreviewBox').innerHTML = '';
+  document.getElementById('postImageInput').value = '';
+});
+
+socket.on('post_list', (list) => {
+  allPosts = list;
+  renderPosts();
+});
+socket.on('new_post', (post) => {
+  allPosts.unshift(post);
+  renderPosts();
+});
+socket.on('post_liked', ({ postId, likeCount, likedBy }) => {
+  const p = allPosts.find(p => p.id === postId);
+  if (p) { p.likeCount = likeCount; p.likedBy = likedBy; }
+  const btn = document.querySelector(`.like-btn[data-post="${postId}"]`);
+  if (btn) {
+    const mine = likedBy.includes(socket.id);
+    btn.classList.toggle('liked', mine);
+    btn.querySelector('.count').textContent = likeCount;
+  }
+});
+
+function renderPosts(){
+  const el = document.getElementById('postList');
+  if (allPosts.length === 0){
+    el.innerHTML = '<div class="empty-feed">Ainda não tem nenhum post. Seja o primeiro a publicar! 🎉</div>';
+    return;
+  }
+  el.innerHTML = allPosts.map(postCardHtml).join('');
+  el.querySelectorAll('.like-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      socket.emit('like_post', { postId: btn.dataset.post });
+    });
+  });
+  el.querySelectorAll('.post-avatar').forEach(av => {
+    av.addEventListener('click', () => {
+      openProfile(av.dataset.uid, av.dataset.name, av.dataset.avatar || null);
+    });
+  });
+}
+
+function postCardHtml(p){
+  const mine = p.likedBy && p.likedBy.includes(socket.id);
+  const time = new Date(p.ts).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+  const live = onlineUsersMap[p.authorId];
+  const status = live ? live.status : null;
+  const avatarSrc = live || p; // prefere dados atuais de quem postou; se offline, usa o snapshot salvo no post
+  return `
+    <div class="post-card">
+      <div class="post-head">
+        <div class="post-avatar with-badge" data-uid="${p.authorId}" data-name="${escapeHtml(p.name)}" data-avatar="${p.avatarUrl || ''}">
+          ${avatarMediaHtml({ ...avatarSrc, name: p.name })}
+          ${badgeHtml(status)}
+        </div>
+        <div class="who">
+          <span class="n">${escapeHtml(p.name)}</span>
+          <span class="t">${time}</span>
+        </div>
+      </div>
+      ${p.text ? `<div class="post-text">${escapeHtml(p.text)}</div>` : ''}
+      ${p.image ? `<img class="post-image" src="${p.image}" />` : ''}
+      <div class="post-actions">
+        <button class="like-btn ${mine ? 'liked' : ''}" data-post="${p.id}">
+          ${mine ? '💖' : '🤍'} <span class="count">${p.likeCount}</span> curtir${p.likeCount === 1 ? '' : 'es'}
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+// ==================== MENSAGENS (estilo MSN) ====================
+let currentDmWith = null;
+let unreadCounts = {}; // id -> quantidade de mensagens novas
+
+function renderContactList(){
+  const el = document.getElementById('contactList');
+  const others = Object.values(onlineUsersMap).filter(u => u.id !== socket.id);
+  document.getElementById('onlineCountHint').textContent = `${others.length} online`;
+  if (others.length === 0){
+    el.innerHTML = '<div class="empty-contacts">Ninguém mais online agora. Chama alguém pra testar junto! 👋</div>';
+    return;
+  }
+  el.innerHTML = others.map(u => `
+    <div class="contact-card" data-id="${u.id}">
+      <div class="contact-avatar with-badge">
+        ${avatarMediaHtml(u)}
+        ${badgeHtml(u.status)}
+      </div>
+      <div class="contact-info">
+        <div class="n">${escapeHtml(u.name)}</div>
+        <div class="s">${moodLabel(u.status)}</div>
+      </div>
+    </div>
+  `).join('');
+  el.querySelectorAll('.contact-card').forEach(card => {
+    card.addEventListener('click', () => openDm(card.dataset.id));
+  });
+}
+
+function openDm(userId){
+  currentDmWith = userId;
+  const u = onlineUsersMap[userId];
+  document.getElementById('dmHeaderName').textContent = u ? u.name : 'Visitante';
+  document.getElementById('dmHeaderAvatar').innerHTML = u ? avatarMediaHtml(u) : `<div class="fallback">?</div>`;
+  document.getElementById('dmMessages').innerHTML = '';
+  document.getElementById('contactListView').style.display = 'none';
+  document.getElementById('dmChatView').classList.add('active');
+  socket.emit('get_dm_history', { withId: userId });
+}
+document.getElementById('btnBackToContacts').addEventListener('click', () => {
+  currentDmWith = null;
+  document.getElementById('dmChatView').classList.remove('active');
+  document.getElementById('contactListView').style.display = '';
+});
+
+socket.on('dm_history', ({ withId, messages }) => {
+  if (withId !== currentDmWith) return;
+  const box = document.getElementById('dmMessages');
+  box.innerHTML = '';
+  messages.forEach(renderDmMessage);
+  box.scrollTop = box.scrollHeight;
+});
+socket.on('dm_message', ({ withId, message }) => {
+  if (withId === currentDmWith) {
+    renderDmMessage(message);
+    const box = document.getElementById('dmMessages');
+    box.scrollTop = box.scrollHeight;
+  }
+});
+function renderDmMessage(msg){
+  const mine = msg.fromId === socket.id;
+  const el = document.createElement('div');
+  el.className = 'msg' + (mine ? ' mine' : '');
+  el.innerHTML = `<div class="bubble">${escapeHtml(msg.text)}</div>`;
+  document.getElementById('dmMessages').appendChild(el);
+}
+function sendDm(){
+  const input = document.getElementById('dmInput');
+  const text = input.value.trim();
+  if (!text || !currentDmWith) return;
+  socket.emit('dm_send', { toId: currentDmWith, text });
+  input.value = '';
+}
+document.getElementById('btnDmSend').addEventListener('click', sendDm);
+document.getElementById('dmInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') sendDm();
+});
 </script>
 </body>
 </html>
