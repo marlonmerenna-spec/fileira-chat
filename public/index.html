@@ -544,19 +544,24 @@ const AVATAR2D_PARTS = {
   skin: {
     label: 'Pele',
     options: [
-      { id: 'p1', color: '#FCE0C0' }, { id: 'p2', color: '#F0C199' },
+      { id: 'p1', color: '#FFE0BD' }, { id: 'p2', color: '#FCE0C0' }, { id: 'p6', color: '#F0C199' },
       { id: 'p3', color: '#C98A5C' }, { id: 'p4', color: '#8D5A3B' },
-      { id: 'p5', color: '#5A3825' },
+      { id: 'p5', color: '#5A3825' }, { id: 'p7', color: '#2E1912' },
     ],
   },
   hair: {
     label: 'Cabelo',
     options: [
-      { id: 'none',   label: 'Careca' },
-      { id: 'short',  label: 'Curto' },
-      { id: 'long',   label: 'Longo' },
-      { id: 'curly',  label: 'Cacheado' },
-      { id: 'mohawk', label: 'Moicano' },
+      { id: 'none',     label: 'Careca' },
+      { id: 'buzz',     label: 'Raspado' },
+      { id: 'short',    label: 'Curto' },
+      { id: 'bangs',    label: 'Franjinha' },
+      { id: 'bob',      label: 'Chanel' },
+      { id: 'long',     label: 'Longo' },
+      { id: 'ponytail', label: 'Rabo de cavalo' },
+      { id: 'curly',    label: 'Cacheado' },
+      { id: 'afro',     label: 'Afro' },
+      { id: 'mohawk',   label: 'Moicano' },
     ],
   },
   hairColor: {
@@ -565,14 +570,19 @@ const AVATAR2D_PARTS = {
       { id: 'h1', color: '#2B2118' }, { id: 'h2', color: '#7A4B25' },
       { id: 'h3', color: '#D4A017' }, { id: 'h4', color: '#B33B3B' },
       { id: 'h5', color: '#E8E8F0' }, { id: 'h6', color: '#FF4D8D' },
+      { id: 'h7', color: '#3B5BA5' }, { id: 'h8', color: '#4CAF6D' },
+      { id: 'h9', color: '#8B5CF6' }, { id: 'h10', color: '#FFFFFF' },
     ],
   },
   outfit: {
     label: 'Roupa',
     options: [
-      { id: 'round', label: 'Gola redonda' },
-      { id: 'vneck', label: 'Gola V' },
-      { id: 'hoodie', label: 'Moletom' },
+      { id: 'round',      label: 'Gola redonda' },
+      { id: 'vneck',      label: 'Gola V' },
+      { id: 'tank',       label: 'Regata' },
+      { id: 'turtleneck', label: 'Gola alta' },
+      { id: 'hoodie',     label: 'Moletom' },
+      { id: 'jacket',     label: 'Jaqueta' },
     ],
   },
   outfitColor: {
@@ -581,16 +591,22 @@ const AVATAR2D_PARTS = {
       { id: 'o1', color: '#FF4D8D' }, { id: 'o2', color: '#4DFFCE' },
       { id: 'o3', color: '#5B8DEF' }, { id: 'o4', color: '#F5F3FF' },
       { id: 'o5', color: '#33305C' }, { id: 'o6', color: '#F5A623' },
+      { id: 'o7', color: '#9B59B6' }, { id: 'o8', color: '#1B998B' },
+      { id: 'o9', color: '#1A1A1A' }, { id: 'o10', color: '#6B4226' },
     ],
   },
   accessory: {
     label: 'Acessório',
     options: [
-      { id: 'none', label: 'Nenhum' },
-      { id: 'glasses', label: 'Óculos' },
+      { id: 'none',       label: 'Nenhum' },
+      { id: 'glasses',    label: 'Óculos' },
       { id: 'sunglasses', label: 'Óculos escuro' },
-      { id: 'hat', label: 'Boné' },
-      { id: 'earrings', label: 'Brincos' },
+      { id: 'hat',        label: 'Boné' },
+      { id: 'beanie',     label: 'Gorro' },
+      { id: 'headphones', label: 'Fone' },
+      { id: 'earrings',   label: 'Brincos' },
+      { id: 'bowtie',     label: 'Gravata borboleta' },
+      { id: 'necklace',   label: 'Colar' },
     ],
   },
 };
@@ -599,14 +615,23 @@ const DEFAULT_AVATAR2D_CONFIG = {
 };
 
 function hairSvg(style, color){
+  const shortCap = `<path d="M18 40 Q20 8 50 8 Q80 8 82 40 Q70 20 50 20 Q30 20 18 40 Z" fill="${color}"/>`;
   switch(style){
-    case 'short': return `<path d="M18 40 Q20 8 50 8 Q80 8 82 40 Q70 20 50 20 Q30 20 18 40 Z" fill="${color}"/>`;
-    case 'long': return `<path d="M18 40 Q20 8 50 8 Q80 8 82 40 Q70 20 50 20 Q30 20 18 40 Z" fill="${color}"/>
+    case 'buzz': return `<path d="M20 36 Q22 14 50 14 Q78 14 80 36 Q68 24 50 24 Q32 24 20 36 Z" fill="${color}" opacity="0.85"/>`;
+    case 'short': return shortCap;
+    case 'bangs': return `${shortCap}<path d="M24 34 Q50 44 76 34 L76 25 Q50 33 24 25 Z" fill="${color}"/>`;
+    case 'bob': return `${shortCap}<path d="M18 38 L18 58 L28 58 L28 40 Z" fill="${color}"/><path d="M82 38 L82 58 L72 58 L72 40 Z" fill="${color}"/>`;
+    case 'long': return `${shortCap}
       <path d="M16 38 Q14 70 20 88 L30 88 Q24 60 26 38 Z" fill="${color}"/>
       <path d="M84 38 Q86 70 80 88 L70 88 Q76 60 74 38 Z" fill="${color}"/>`;
+    case 'ponytail': return `${shortCap}<path d="M78 20 Q92 30 86 55 Q80 58 78 50 Q84 34 74 22 Z" fill="${color}"/>`;
     case 'curly': return `<circle cx="26" cy="26" r="9" fill="${color}"/><circle cx="40" cy="16" r="10" fill="${color}"/>
       <circle cx="58" cy="14" r="10" fill="${color}"/><circle cx="74" cy="24" r="9" fill="${color}"/>
       <circle cx="50" cy="22" r="11" fill="${color}"/>`;
+    case 'afro': return `<circle cx="20" cy="34" r="10" fill="${color}"/><circle cx="30" cy="15" r="12" fill="${color}"/>
+      <circle cx="50" cy="9" r="13" fill="${color}"/><circle cx="70" cy="15" r="12" fill="${color}"/>
+      <circle cx="80" cy="34" r="10" fill="${color}"/><circle cx="50" cy="19" r="14" fill="${color}"/>
+      <circle cx="16" cy="42" r="7" fill="${color}"/><circle cx="84" cy="42" r="7" fill="${color}"/>`;
     case 'mohawk': return `<path d="M42 6 L58 6 L54 34 L46 34 Z" fill="${color}"/>`;
     default: return '';
   }
@@ -647,7 +672,10 @@ function extrasSvg(status){
 function outfitSvg(style, color){
   switch(style){
     case 'vneck': return `<path d="M10 100 L10 82 Q50 70 90 82 L90 100 Z" fill="${color}"/><path d="M40 82 L50 92 L60 82 L54 78 L50 84 L46 78 Z" fill="#00000022"/>`;
+    case 'tank': return `<path d="M14 100 L14 84 Q50 76 86 84 L86 100 Z" fill="${color}"/><rect x="30" y="78" width="6" height="10" fill="${color}"/><rect x="64" y="78" width="6" height="10" fill="${color}"/>`;
+    case 'turtleneck': return `<path d="M8 100 L8 80 Q50 68 92 80 L92 100 Z" fill="${color}"/><rect x="38" y="67" width="24" height="15" rx="7" fill="${color}"/>`;
     case 'hoodie': return `<path d="M6 100 L6 80 Q50 64 94 80 L94 100 Z" fill="${color}"/><path d="M32 80 Q50 92 68 80 L68 88 Q50 100 32 88 Z" fill="#00000022"/>`;
+    case 'jacket': return `<path d="M8 100 L8 82 Q50 70 92 82 L92 100 Z" fill="${color}"/><path d="M50 78 L46 100 M50 78 L54 100" stroke="#00000033" stroke-width="2"/><path d="M36 80 L44 90 L50 82 L56 90 L64 80" fill="none" stroke="#00000022" stroke-width="2"/>`;
     default: return `<path d="M10 100 L10 82 Q50 72 90 82 L90 100 Z" fill="${color}"/>`;
   }
 }
@@ -661,7 +689,13 @@ function accessorySvg(kind){
       <path d="M48 45 L52 45" stroke="#1A1A1A" stroke-width="3"/>`;
     case 'hat': return `<path d="M16 32 Q20 6 50 6 Q80 6 84 32 Q66 22 50 22 Q34 22 16 32 Z" fill="#33305C"/>
       <ellipse cx="50" cy="32" rx="34" ry="6" fill="#26234a"/>`;
+    case 'beanie': return `<path d="M18 34 Q20 8 50 8 Q80 8 82 34 Q82 30 50 30 Q18 30 18 34 Z" fill="#33305C"/>
+      <rect x="16" y="28" width="68" height="8" rx="4" fill="#26234a"/><circle cx="50" cy="8" r="4" fill="#F5A623"/>`;
+    case 'headphones': return `<path d="M22 40 Q22 10 50 10 Q78 10 78 40" fill="none" stroke="#2B2118" stroke-width="4"/>
+      <rect x="14" y="38" width="10" height="16" rx="4" fill="#2B2118"/><rect x="76" y="38" width="10" height="16" rx="4" fill="#2B2118"/>`;
     case 'earrings': return `<circle cx="18" cy="52" r="2.6" fill="#F5A623"/><circle cx="82" cy="52" r="2.6" fill="#F5A623"/>`;
+    case 'bowtie': return `<path d="M36 78 L48 82 L36 86 Z" fill="#8B2E4A"/><path d="M64 78 L52 82 L64 86 Z" fill="#8B2E4A"/><circle cx="50" cy="82" r="3" fill="#5A1B30"/>`;
+    case 'necklace': return `<path d="M36 78 Q50 92 64 78" fill="none" stroke="#F5A623" stroke-width="2"/><circle cx="50" cy="90" r="3" fill="#F5A623"/>`;
     default: return '';
   }
 }
@@ -687,7 +721,6 @@ function buildAvatarSVG(config, status){
     ${mouthSvg(status)}
     ${extrasSvg(status)}
     ${hairSvg(cfg.hair, hColor)}
-    ${cfg.accessory !== 'hat' ? '' : ''}
     ${accessorySvg(cfg.accessory)}
   </svg>`;
 }
