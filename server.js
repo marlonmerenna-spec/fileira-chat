@@ -12,6 +12,54 @@ const io = new Server(server, {
 
 app.use(express.static(path.join(__dirname, 'public')));
 
+// ---- Login com Facebook (OAuth) ----
+// Exige duas variáveis de ambiente configuradas no Render: FACEBOOK_APP_ID e FACEBOOK_APP_SECRET.
+// Sem elas, o botão mostra uma mensagem explicando o que falta, em vez de quebrar.
+const FB_APP_ID = process.env.FACEBOOK_APP_ID;
+const FB_APP_SECRET = process.env.FACEBOOK_APP_SECRET;
+
+app.get('/auth/facebook', (req, res) => {
+  if (!FB_APP_ID || !FB_APP_SECRET) {
+    return res.status(500).send(
+      'Login com Facebook ainda não configurado neste servidor. ' +
+      'É preciso criar um app gratuito em developers.facebook.com e definir as variáveis ' +
+      'FACEBOOK_APP_ID e FACEBOOK_APP_SECRET nas configurações do Render. ' +
+      '<a href="/">Voltar</a>'
+    );
+  }
+  const redirectUri = `${req.protocol}://${req.get('host')}/auth/facebook/callback`;
+  const authUrl = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${FB_APP_ID}` +
+    `&redirect_uri=${encodeURIComponent(redirectUri)}&scope=public_profile,email&response_type=code`;
+  res.redirect(authUrl);
+});
+
+app.get('/auth/facebook/callback', async (req, res) => {
+  try {
+    const { code, error: fbError } = req.query;
+    if (fbError || !code) throw new Error('Login cancelado ou não autorizado.');
+    const redirectUri = `${req.protocol}://${req.get('host')}/auth/facebook/callback`;
+
+    const tokenRes = await fetch(
+      `https://graph.facebook.com/v19.0/oauth/access_token?client_id=${FB_APP_ID}` +
+      `&redirect_uri=${encodeURIComponent(redirectUri)}&client_secret=${FB_APP_SECRET}&code=${code}`
+    );
+    const tokenData = await tokenRes.json();
+    if (!tokenData.access_token) throw new Error('Não recebi o token de acesso do Facebook.');
+
+    const profileRes = await fetch(
+      `https://graph.facebook.com/me?fields=id,name,picture.type(large)&access_token=${tokenData.access_token}`
+    );
+    const profile = await profileRes.json();
+
+    const name = encodeURIComponent(profile.name || '');
+    const photo = encodeURIComponent(profile.picture && profile.picture.data ? profile.picture.data.url : '');
+    res.redirect(`/?fb_name=${name}&fb_photo=${photo}`);
+  } catch (err) {
+    console.error('Erro no login com Facebook:', err.message);
+    res.redirect('/?fb_error=1');
+  }
+});
+
 // ---- Estado em memória (protótipo: sem banco de dados) ----
 
 const PUBLIC_ROOMS = [
@@ -61,12 +109,22 @@ function genCode() {
   return Math.random().toString(36).substring(2, 7).toUpperCase();
 }
 
+// ---- Marketplace (em memória) ----
+const listings = [];
+function serializeListing(l) {
+  return {
+    id: l.id, sellerId: l.sellerId, sellerName: l.sellerName,
+    title: l.title, price: l.price, description: l.description, image: l.image, ts: l.ts,
+  };
+}
+
 // ---- Usuários online e status (tipo MSN) ----
 const onlineUsers = new Map(); // socketId -> { name, avatarUrl, status }
 
 function broadcastOnlineUsers() {
   const list = Array.from(onlineUsers.entries()).map(([id, u]) => ({
-    id, name: u.name, avatarUrl: u.avatarUrl, avatarType: u.avatarType, avatarConfig: u.avatarConfig, status: u.status,
+    id, name: u.name, avatarUrl: u.avatarUrl, avatarType: u.avatarType, avatarConfig: u.avatarConfig,
+    photoUrl: u.photoUrl, city: u.city, work: u.work, status: u.status,
   }));
   io.emit('online_users', list);
 }
@@ -88,6 +146,7 @@ function serializePost(p) {
     avatarConfig: p.avatarConfig,
     text: p.text,
     image: p.image,
+    videoUrl: p.videoUrl || null,
     ts: p.ts,
     likeCount: p.likes.size,
     likedBy: Array.from(p.likes),
@@ -98,12 +157,15 @@ io.on('connection', (socket) => {
   socket.data.profile = null;
   socket.data.roomId = null;
 
-  socket.on('set_profile', ({ name, avatarUrl, avatarType, avatarConfig }) => {
+  socket.on('set_profile', ({ name, avatarUrl, avatarType, avatarConfig, photoUrl, city, work }) => {
     socket.data.profile = {
       name: (name || 'Visitante').slice(0, 24),
       avatarUrl: avatarUrl || null,
       avatarType: avatarType || null,
       avatarConfig: avatarConfig || null,
+      photoUrl: photoUrl || null,
+      city: (city || '').slice(0, 60),
+      work: (work || '').slice(0, 60),
       status: 'disponivel',
     };
     onlineUsers.set(socket.id, socket.data.profile);
@@ -217,10 +279,11 @@ io.on('connection', (socket) => {
     socket.emit('post_list', posts.map(serializePost));
   });
 
-  socket.on('create_post', ({ text, image }) => {
+  socket.on('create_post', ({ text, image, videoUrl }) => {
     if (!socket.data.profile) return;
     const cleanText = (text || '').trim().slice(0, 500);
-    if (!cleanText && !image) return; // não publica post totalmente vazio
+    const cleanVideo = (videoUrl || '').trim().slice(0, 500);
+    if (!cleanText && !image && !cleanVideo) return; // não publica post totalmente vazio
     const post = {
       id: Date.now() + '_' + socket.id,
       authorId: socket.id,
@@ -230,6 +293,7 @@ io.on('connection', (socket) => {
       avatarConfig: socket.data.profile.avatarConfig,
       text: cleanText,
       image: image || null, // dataURL já redimensionado no cliente
+      videoUrl: cleanVideo || null,
       likes: new Set(),
       ts: Date.now(),
     };
@@ -247,6 +311,29 @@ io.on('connection', (socket) => {
       post.likes.add(socket.id);
     }
     io.emit('post_liked', { postId: post.id, likeCount: post.likes.size, likedBy: Array.from(post.likes) });
+  });
+
+  socket.on('get_listings', () => {
+    socket.emit('listing_list', listings.map(serializeListing));
+  });
+
+  socket.on('create_listing', ({ title, price, description, image }) => {
+    if (!socket.data.profile) return;
+    const cleanTitle = (title || '').trim().slice(0, 60);
+    if (!cleanTitle) return;
+    const listing = {
+      id: Date.now() + '_' + socket.id,
+      sellerId: socket.id,
+      sellerName: socket.data.profile.name,
+      title: cleanTitle,
+      price: (price || '').trim().slice(0, 20),
+      description: (description || '').trim().slice(0, 300),
+      image: image || null,
+      ts: Date.now(),
+    };
+    listings.unshift(listing);
+    if (listings.length > 200) listings.pop();
+    io.emit('new_listing', serializeListing(listing));
   });
 
   socket.on('leave_room', () => {
