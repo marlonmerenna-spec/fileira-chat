@@ -97,6 +97,22 @@
   .tab-btn.active{ background: var(--bg); color: var(--text); }
 
   /* ---------- Feed ---------- */
+  /* ---------- Feed ---------- */
+  .my-profile-card{
+    background: var(--panel); border:1px solid var(--border); border-radius: var(--radius);
+    padding: 16px; display:flex; align-items:center; gap:14px; margin-bottom: 14px;
+  }
+  .my-profile-card .mp-photo{
+    width:64px; height:64px; border-radius:50%; overflow:hidden; flex:0 0 auto;
+    background: var(--bg); border:2px solid var(--border);
+  }
+  .my-profile-card .mp-photo img{ width:100%; height:100%; object-fit:cover; }
+  .my-profile-card .mp-photo .fallback{ width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-family: var(--font-display); font-size:22px; background: linear-gradient(135deg, #5B7FB5, #34568F); color:#fff; }
+  .my-profile-card .mp-info{ flex:1; min-width:0; }
+  .my-profile-card .mp-name{ font-size:16px; font-weight:800; font-family: var(--font-display); }
+  .my-profile-card .mp-line{ font-size:12.5px; color: var(--text-muted); margin-top:2px; display:flex; align-items:center; gap:5px; }
+  .my-profile-card .mp-empty{ font-size:12px; color: var(--text-muted); font-style:italic; }
+
   .composer-card{
     background: var(--panel); border:1px solid var(--border); border-radius: var(--radius);
     padding: 14px; display:flex; flex-direction:column; gap:10px; margin-bottom: 18px;
@@ -126,12 +142,27 @@
   .post-head .who .t{ font-size:11px; color: var(--text-muted); }
   .post-text{ font-size:14.5px; line-height:1.5; margin: 4px 0 10px; white-space:pre-wrap; word-break:break-word; }
   .post-image{ width:100%; border-radius:14px; margin-bottom:10px; display:block; }
-  .post-actions{ display:flex; gap:8px; }
-  .like-btn{
+  .post-actions{ display:flex; gap:8px; flex-wrap:wrap; }
+  .like-btn, .comment-btn, .share-btn{
     display:flex; align-items:center; gap:6px; background: var(--bg-soft); border:1px solid var(--border);
     color: var(--text-muted); border-radius:100px; padding:7px 14px; font-size:13px; cursor:pointer;
   }
   .like-btn.liked{ color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+  .comment-btn:hover, .share-btn:hover{ border-color: var(--accent); color: var(--accent); }
+  .shared-tag{ font-size:12px; color: var(--text-muted); font-weight:600; margin-bottom:8px; }
+
+  .comments-section{ display:none; margin-top:10px; padding-top:10px; border-top:1px solid var(--border); }
+  .comments-section.active{ display:block; }
+  .comments-list{ display:flex; flex-direction:column; gap:8px; margin-bottom:10px; }
+  .comment-row{ display:flex; gap:8px; align-items:flex-start; }
+  .comment-avatar{ width:28px; height:28px; border-radius:50%; overflow:hidden; flex:0 0 auto; background: var(--bg-soft); }
+  .comment-avatar model-viewer, .comment-avatar svg{ width:100%; height:100%; }
+  .comment-avatar .fallback{ width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:11px; font-family: var(--font-display); background: linear-gradient(135deg, #5B7FB5, #34568F); color:#fff; }
+  .comment-bubble{ background: var(--bg-soft); border-radius:12px; padding:7px 12px; font-size:13px; }
+  .comment-bubble .c-name{ font-weight:700; margin-right:6px; }
+  .comment-composer{ display:flex; gap:8px; }
+  .comment-composer input{ flex:1; padding:9px 12px; border-radius:100px; border:1px solid var(--border); background: var(--bg-soft); color: var(--text); font-size:13px; }
+  .comment-composer button{ padding:9px 16px; border-radius:100px; font-size:13px; }
   .empty-feed{ text-align:center; color: var(--text-muted); font-size:13px; padding: 30px 0; }
 
   /* ---------- Status (tipo MSN) ---------- */
@@ -248,19 +279,31 @@
 
   /* ---------- Navegação global (ícones) ---------- */
   .global-nav{
-    display:none; gap: 4px; padding: 6px 14px; background: var(--panel); border-bottom: 1px solid var(--border);
-    overflow-x:auto;
+    display:none; gap: 2px; padding: 6px 8px; background: var(--panel); border-bottom: 1px solid var(--border);
+    overflow-x:auto; -webkit-overflow-scrolling:touch;
   }
   .global-nav.visible{ display:flex; }
   .nav-item{
-    flex:0 0 auto; display:flex; flex-direction:column; align-items:center; gap:2px;
-    background:transparent; border:none; cursor:pointer; padding: 8px 14px; border-radius: 10px;
-    color: var(--text-muted); min-width: 64px;
+    flex:1 1 0; display:flex; flex-direction:column; align-items:center; gap:2px;
+    background:transparent; border:none; cursor:pointer; padding: 8px 4px; border-radius: 10px;
+    color: var(--text-muted); min-width: 0;
   }
   .nav-item:hover{ background: var(--panel-hover); }
   .nav-item.active{ color: var(--accent); background: var(--accent-soft); }
-  .nav-icon{ font-size:19px; }
-  .nav-label{ font-size:10.5px; font-weight:600; }
+  .nav-icon{ font-size:19px; line-height:1; }
+  .nav-label{ font-size:10.5px; font-weight:600; white-space:nowrap; }
+
+  @media (max-width: 480px){
+    .global-nav{ padding: 5px 4px; }
+    .nav-item{ padding: 6px 2px; }
+    .nav-icon{ font-size:17px; }
+    .nav-label{ font-size:9px; }
+  }
+  @media (max-width: 360px){
+    .nav-label{ display:none; } /* telas bem estreitas: só o ícone, sem o texto */
+    .nav-item{ padding: 8px 2px; }
+    .nav-icon{ font-size:20px; }
+  }
 
   /* ---------- Fotos / Vídeos / Marketplace ---------- */
   .photo-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap:8px; padding-bottom:24px; }
@@ -442,8 +485,12 @@
         <div class="profile-photo-picker" id="profilePhotoPreview">
           <span class="avatar-placeholder">Foto de perfil</span>
         </div>
-        <input type="file" id="profilePhotoInput" accept="image/*" style="display:none" />
-        <button class="btn btn-ghost" id="btnAddProfilePhoto">🖼️ Adicionar foto de perfil</button>
+        <input type="file" id="profilePhotoCameraInput" accept="image/*" capture="user" style="display:none" />
+        <input type="file" id="profilePhotoGalleryInput" accept="image/*" style="display:none" />
+        <div class="btn-row">
+          <button class="btn btn-ghost" id="btnTakeProfilePhoto">📷 Tirar foto</button>
+          <button class="btn btn-ghost" id="btnChooseProfilePhoto">🖼️ Escolher da galeria</button>
+        </div>
       </div>
 
       <input type="text" id="nameInput" placeholder="Como quer ser chamado(a)?" maxlength="24" />
@@ -457,12 +504,17 @@
   <!-- TELA 2: Feed -->
   <section id="screen-feed" class="screen">
     <div class="wrap">
+      <div class="my-profile-card" id="myProfileCard"></div>
       <div class="composer-card">
         <textarea id="postText" placeholder="O que você está pensando?" maxlength="500"></textarea>
         <div id="imgPreviewBox"></div>
-        <input type="file" id="postImageInput" accept="image/*" style="display:none" />
+        <input type="file" id="postImageCameraInput" accept="image/*" capture="environment" style="display:none" />
+        <input type="file" id="postImageGalleryInput" accept="image/*" style="display:none" />
         <div class="composer-actions">
-          <button class="btn btn-ghost" id="btnAddImage">🖼️ Foto</button>
+          <div class="btn-row">
+            <button class="btn btn-ghost" id="btnTakePostPhoto">📷 Tirar foto</button>
+            <button class="btn btn-ghost" id="btnChoosePostPhoto">🖼️ Galeria</button>
+          </div>
           <button class="btn btn-primary" id="btnPublish">Publicar</button>
         </div>
       </div>
@@ -573,9 +625,13 @@
         <input type="text" id="listingPrice" placeholder="Preço (ex: R$ 50)" maxlength="20" />
         <textarea id="listingDesc" placeholder="Descrição do item" maxlength="300"></textarea>
         <div id="listingImgPreview"></div>
-        <input type="file" id="listingImageInput" accept="image/*" style="display:none" />
+        <input type="file" id="listingImageCameraInput" accept="image/*" capture="environment" style="display:none" />
+        <input type="file" id="listingImageGalleryInput" accept="image/*" style="display:none" />
         <div class="composer-actions">
-          <button class="btn btn-ghost" id="btnAddListingImage">🖼️ Foto</button>
+          <div class="btn-row">
+            <button class="btn btn-ghost" id="btnTakeListingPhoto">📷 Tirar foto</button>
+            <button class="btn btn-ghost" id="btnChooseListingPhoto">🖼️ Galeria</button>
+          </div>
           <button class="btn btn-primary" id="btnPublishListing">Anunciar</button>
         </div>
       </div>
@@ -915,6 +971,24 @@ function avatarMediaHtml(u){
   return `<div class="fallback">${initials(u.name)}</div>`;
 }
 
+// -------- Cartão de perfil no topo do Feed (estilo Facebook) --------
+function renderMyProfileCard(){
+  const box = document.getElementById('myProfileCard');
+  const photoHtml = myProfile.photoUrl
+    ? `<img src="${myProfile.photoUrl}" />`
+    : `<div class="fallback">${initials(myProfile.name)}</div>`;
+  const lines = [];
+  if (myProfile.city) lines.push(`<div class="mp-line">📍 ${escapeHtml(myProfile.city)}</div>`);
+  if (myProfile.work) lines.push(`<div class="mp-line">💼 ${escapeHtml(myProfile.work)}</div>`);
+  box.innerHTML = `
+    <div class="mp-photo">${photoHtml}</div>
+    <div class="mp-info">
+      <div class="mp-name">${escapeHtml(myProfile.name || 'Visitante')}</div>
+      ${lines.join('') || '<div class="mp-empty">Adicione cidade e trabalho no seu perfil</div>'}
+    </div>
+  `;
+}
+
 // -------- Customizador do avatar 2D --------
 let avatar2dConfig = { ...DEFAULT_AVATAR2D_CONFIG };
 let avatar2dActiveTab = 'skin';
@@ -967,19 +1041,28 @@ function renderAvatar2DSwatches(){
 }
 
 // -------- Perfil --------
-document.getElementById('btnAddProfilePhoto').addEventListener('click', () => {
-  document.getElementById('profilePhotoInput').click();
-});
-document.getElementById('profilePhotoInput').addEventListener('change', async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  try {
-    myProfile.photoUrl = await resizeImage(file, 300, 0.8);
-    document.getElementById('profilePhotoPreview').innerHTML = `<img src="${myProfile.photoUrl}" />`;
-  } catch (err) {
-    console.error(err);
-    alert('Não consegui processar essa foto, tenta outra.');
-  }
+// Handler reutilizável: liga botões de "tirar foto" / "escolher da galeria" a um input de arquivo
+function wirePhotoPicker(cameraBtnId, cameraInputId, galleryBtnId, galleryInputId, onFile){
+  const cameraBtn = document.getElementById(cameraBtnId);
+  const galleryBtn = document.getElementById(galleryBtnId);
+  const cameraInput = document.getElementById(cameraInputId);
+  const galleryInput = document.getElementById(galleryInputId);
+  if (cameraBtn) cameraBtn.addEventListener('click', () => cameraInput.click());
+  if (galleryBtn) galleryBtn.addEventListener('click', () => galleryInput.click());
+  [cameraInput, galleryInput].forEach(input => {
+    input.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      try { await onFile(file); }
+      catch (err) { console.error(err); alert('Não consegui processar essa foto, tenta outra.'); }
+      finally { e.target.value = ''; }
+    });
+  });
+}
+
+wirePhotoPicker('btnTakeProfilePhoto', 'profilePhotoCameraInput', 'btnChooseProfilePhoto', 'profilePhotoGalleryInput', async (file) => {
+  myProfile.photoUrl = await resizeImage(file, 300, 0.8);
+  document.getElementById('profilePhotoPreview').innerHTML = `<img src="${myProfile.photoUrl}" />`;
 });
 
 // -------- Login / Criar conta --------
@@ -1028,6 +1111,7 @@ socket.on('auth_success', ({ isNewUser, profile }) => {
   socket.emit('get_posts');
   socket.emit('get_online_users');
   socket.emit('get_listings');
+  renderMyProfileCard();
   showScreen('feed');
 });
 
@@ -1041,6 +1125,7 @@ document.getElementById('btnContinue').addEventListener('click', () => {
   socket.emit('get_posts');
   socket.emit('get_online_users');
   socket.emit('get_listings');
+  renderMyProfileCard();
   showScreen('feed');
 });
 
@@ -1333,28 +1418,17 @@ function resizeImage(file, maxWidth = 720, quality = 0.72){
   });
 }
 
-document.getElementById('btnAddImage').addEventListener('click', () => {
-  document.getElementById('postImageInput').click();
-});
-document.getElementById('postImageInput').addEventListener('change', async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  try {
-    pendingImage = await resizeImage(file);
-    document.getElementById('imgPreviewBox').innerHTML = `
-      <div class="img-preview">
-        <img src="${pendingImage}" />
-        <button id="btnRemoveImg" title="Remover">✕</button>
-      </div>`;
-    document.getElementById('btnRemoveImg').addEventListener('click', () => {
-      pendingImage = null;
-      document.getElementById('imgPreviewBox').innerHTML = '';
-      e.target.value = '';
-    });
-  } catch (err) {
-    console.error(err);
-    alert('Não consegui processar essa imagem, tenta outra.');
-  }
+wirePhotoPicker('btnTakePostPhoto', 'postImageCameraInput', 'btnChoosePostPhoto', 'postImageGalleryInput', async (file) => {
+  pendingImage = await resizeImage(file);
+  document.getElementById('imgPreviewBox').innerHTML = `
+    <div class="img-preview">
+      <img src="${pendingImage}" />
+      <button id="btnRemoveImg" title="Remover">✕</button>
+    </div>`;
+  document.getElementById('btnRemoveImg').addEventListener('click', () => {
+    pendingImage = null;
+    document.getElementById('imgPreviewBox').innerHTML = '';
+  });
 });
 
 document.getElementById('btnPublish').addEventListener('click', () => {
@@ -1365,7 +1439,6 @@ document.getElementById('btnPublish').addEventListener('click', () => {
   textEl.value = '';
   pendingImage = null;
   document.getElementById('imgPreviewBox').innerHTML = '';
-  document.getElementById('postImageInput').value = '';
 });
 
 socket.on('post_list', (list) => {
@@ -1391,6 +1464,8 @@ socket.on('post_liked', ({ postId, likeCount, likedBy }) => {
   }
 });
 
+let expandedComments = new Set(); // ids de posts com a caixa de comentários aberta
+
 function renderPosts(){
   const el = document.getElementById('postList');
   if (allPosts.length === 0){
@@ -1408,7 +1483,50 @@ function renderPosts(){
       openProfile(av.dataset.uid, av.dataset.name, av.dataset.avatar || null);
     });
   });
+  el.querySelectorAll('.comment-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const postId = btn.dataset.post;
+      if (expandedComments.has(postId)) expandedComments.delete(postId);
+      else expandedComments.add(postId);
+      document.getElementById('comments-' + postId).classList.toggle('active');
+    });
+  });
+  el.querySelectorAll('.share-btn').forEach(btn => {
+    btn.addEventListener('click', () => sharePost(btn.dataset.post));
+  });
+  el.querySelectorAll('[data-comment-send]').forEach(btn => {
+    btn.addEventListener('click', () => sendComment(btn.dataset.commentSend));
+  });
+  el.querySelectorAll('[data-comment-input]').forEach(input => {
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') sendComment(input.dataset.commentInput);
+    });
+  });
 }
+function sendComment(postId){
+  const input = document.querySelector(`[data-comment-input="${postId}"]`);
+  const text = input.value.trim();
+  if (!text) return;
+  socket.emit('add_comment', { postId, text });
+  input.value = '';
+}
+function sharePost(postId){
+  const original = allPosts.find(p => p.id === postId);
+  if (!original) return;
+  socket.emit('create_post', {
+    text: original.text || '',
+    image: original.image || null,
+    videoUrl: original.videoUrl || null,
+    sharedFrom: { name: original.sharedFrom ? original.sharedFrom.name : original.name },
+  });
+}
+socket.on('new_comment', ({ postId, comment }) => {
+  const post = allPosts.find(p => p.id === postId);
+  if (!post) return;
+  if (!post.comments) post.comments = [];
+  post.comments.push(comment);
+  renderPosts();
+});
 
 function postCardHtml(p){
   const mine = p.likedBy && p.likedBy.includes(socket.id);
@@ -1416,8 +1534,11 @@ function postCardHtml(p){
   const live = onlineUsersMap[p.authorId];
   const status = live ? live.status : null;
   const avatarSrc = live || p; // prefere dados atuais de quem postou; se offline, usa o snapshot salvo no post
+  const comments = p.comments || [];
+  const isOpen = expandedComments.has(p.id);
   return `
     <div class="post-card">
+      ${p.sharedFrom ? `<div class="shared-tag">🔁 Compartilhado de ${escapeHtml(p.sharedFrom.name)}</div>` : ''}
       <div class="post-head">
         <div class="post-avatar with-badge" data-uid="${p.authorId}" data-name="${escapeHtml(p.name)}" data-avatar="${p.avatarUrl || ''}">
           ${avatarMediaHtml({ ...avatarSrc, name: p.name })}
@@ -1435,6 +1556,26 @@ function postCardHtml(p){
         <button class="like-btn ${mine ? 'liked' : ''}" data-post="${p.id}">
           ${mine ? '💖' : '🤍'} <span class="count">${p.likeCount}</span> curtir${p.likeCount === 1 ? '' : 'es'}
         </button>
+        <button class="comment-btn" data-post="${p.id}">💬 ${comments.length} coment${comments.length === 1 ? 'ário' : 'ários'}</button>
+        <button class="share-btn" data-post="${p.id}">🔁 Compartilhar</button>
+      </div>
+      <div class="comments-section ${isOpen ? 'active' : ''}" id="comments-${p.id}">
+        <div class="comments-list">${comments.map(commentHtml).join('')}</div>
+        <div class="comment-composer">
+          <input type="text" placeholder="Escreva um comentário…" maxlength="300" data-comment-input="${p.id}" />
+          <button class="btn btn-primary" data-comment-send="${p.id}">Enviar</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+function commentHtml(c){
+  return `
+    <div class="comment-row">
+      <div class="comment-avatar">${avatarMediaHtml(onlineUsersMap[c.authorId] || c)}</div>
+      <div class="comment-bubble">
+        <span class="c-name">${escapeHtml(c.name)}</span>
+        <span class="c-text">${escapeHtml(c.text)}</span>
       </div>
     </div>
   `;
@@ -1485,19 +1626,10 @@ document.getElementById('btnPublishVideo').addEventListener('click', () => {
 let pendingListingImage = null;
 let allListings = [];
 
-document.getElementById('btnAddListingImage').addEventListener('click', () => {
-  document.getElementById('listingImageInput').click();
-});
-document.getElementById('listingImageInput').addEventListener('change', async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  try {
-    pendingListingImage = await resizeImage(file);
-    document.getElementById('listingImgPreview').innerHTML = `
-      <div class="img-preview"><img src="${pendingListingImage}" /></div>`;
-  } catch (err) {
-    console.error(err);
-  }
+wirePhotoPicker('btnTakeListingPhoto', 'listingImageCameraInput', 'btnChooseListingPhoto', 'listingImageGalleryInput', async (file) => {
+  pendingListingImage = await resizeImage(file);
+  document.getElementById('listingImgPreview').innerHTML = `
+    <div class="img-preview"><img src="${pendingListingImage}" /></div>`;
 });
 document.getElementById('btnPublishListing').addEventListener('click', () => {
   const title = document.getElementById('listingTitle').value.trim();
@@ -1510,7 +1642,6 @@ document.getElementById('btnPublishListing').addEventListener('click', () => {
   document.getElementById('listingDesc').value = '';
   pendingListingImage = null;
   document.getElementById('listingImgPreview').innerHTML = '';
-  document.getElementById('listingImageInput').value = '';
 });
 socket.on('listing_list', (list) => {
   allListings = list;

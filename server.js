@@ -161,6 +161,8 @@ function serializePost(p) {
     ts: p.ts,
     likeCount: p.likes.size,
     likedBy: Array.from(p.likes),
+    comments: p.comments || [],
+    sharedFrom: p.sharedFrom || null, // { name } de quem fez o post original, se for um compartilhamento
   };
 }
 
@@ -331,11 +333,11 @@ io.on('connection', (socket) => {
     socket.emit('post_list', posts.map(serializePost));
   });
 
-  socket.on('create_post', ({ text, image, videoUrl }) => {
+  socket.on('create_post', ({ text, image, videoUrl, sharedFrom }) => {
     if (!socket.data.profile) return;
     const cleanText = (text || '').trim().slice(0, 500);
     const cleanVideo = (videoUrl || '').trim().slice(0, 500);
-    if (!cleanText && !image && !cleanVideo) return; // não publica post totalmente vazio
+    if (!cleanText && !image && !cleanVideo && !sharedFrom) return; // não publica post totalmente vazio
     const post = {
       id: Date.now() + '_' + socket.id,
       authorId: socket.id,
@@ -346,12 +348,35 @@ io.on('connection', (socket) => {
       text: cleanText,
       image: image || null, // dataURL já redimensionado no cliente
       videoUrl: cleanVideo || null,
+      sharedFrom: sharedFrom ? { name: String(sharedFrom.name || '').slice(0, 24) } : null,
       likes: new Set(),
+      comments: [],
       ts: Date.now(),
     };
     posts.unshift(post);
     if (posts.length > 200) posts.pop();
     io.emit('new_post', serializePost(post));
+  });
+
+  socket.on('add_comment', ({ postId, text }) => {
+    if (!socket.data.profile) return;
+    const post = posts.find(p => p.id === postId);
+    const cleanText = (text || '').trim().slice(0, 300);
+    if (!post || !cleanText) return;
+    if (!post.comments) post.comments = [];
+    const comment = {
+      id: Date.now() + '_' + socket.id,
+      authorId: socket.id,
+      name: socket.data.profile.name,
+      avatarUrl: socket.data.profile.avatarUrl,
+      avatarType: socket.data.profile.avatarType,
+      avatarConfig: socket.data.profile.avatarConfig,
+      text: cleanText,
+      ts: Date.now(),
+    };
+    post.comments.push(comment);
+    if (post.comments.length > 200) post.comments.shift();
+    io.emit('new_comment', { postId, comment });
   });
 
   socket.on('like_post', ({ postId }) => {
