@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
-<title>Feira · salas de bate-papo com avatar 3D</title>
+<title>Social Station · salas de bate-papo com avatar 3D</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/@google/model-viewer@3.5.0/dist/model-viewer.min.js" type="module"></script>
@@ -221,6 +221,31 @@
   .fb-login-box{ display:flex; flex-direction:column; align-items:center; gap:4px; margin-top:16px; padding-top:16px; border-top:1px solid var(--border); width:100%; max-width:320px; }
   .fb-hint{ font-size:11px; color: var(--text-muted); }
 
+  /* ---------- Landing (abertura) ---------- */
+  .landing-wrap{
+    flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap: 28px; padding: 30px 20px; max-width: 420px; margin: 0 auto; text-align:center;
+  }
+  .landing-hero{ display:flex; flex-direction:column; align-items:center; gap:10px; }
+  .landing-dot{ width:52px; height:52px; border-radius:16px; background: var(--accent); box-shadow: 0 8px 20px rgba(52,86,143,0.35); }
+  .landing-hero h1{ font-size: 30px; color: var(--accent); }
+  .landing-hero p{ color: var(--text-muted); font-size:14px; max-width:320px; }
+
+  .auth-card{
+    width:100%; background: var(--panel); border:1px solid var(--border); border-radius: var(--radius);
+    padding: 22px; display:flex; flex-direction:column; gap:12px; box-shadow: 0 10px 30px rgba(34,48,71,0.08);
+  }
+  .auth-tabs{ display:flex; border-radius:10px; overflow:hidden; border:1px solid var(--border); }
+  .auth-tab{
+    flex:1; padding:10px; border:none; background: var(--bg); color: var(--text-muted);
+    font-family: var(--font-display); font-weight:700; font-size:13.5px; cursor:pointer;
+  }
+  .auth-tab.active{ background: var(--accent); color:#fff; }
+  .auth-form{ display:none; flex-direction:column; gap:10px; }
+  .auth-form.active{ display:flex; }
+  .auth-form input{ width:100%; padding:12px 14px; border-radius:10px; border:1px solid var(--border); background: var(--bg); color: var(--text); font-family: var(--font-body); font-size:14px; }
+  .auth-error{ color:#C0392B; font-size:12.5px; min-height:16px; }
+
   /* ---------- Navegação global (ícones) ---------- */
   .global-nav{
     display:none; gap: 4px; padding: 6px 14px; background: var(--panel); border-bottom: 1px solid var(--border);
@@ -349,7 +374,7 @@
 <body>
 
   <div class="topbar">
-    <div class="brand"><span class="brand-dot"></span><h1>Feira</h1></div>
+    <div class="brand"><span class="brand-dot"></span><h1>Social Station</h1></div>
     <div class="status-btn" id="statusBtn">
       <span id="statusEmoji">🟢</span><span id="statusLabel">Disponível</span>
       <div class="status-dropdown" id="statusDropdown"></div>
@@ -358,8 +383,47 @@
 
   <nav class="global-nav" id="globalNav"></nav>
 
+  <!-- TELA 0: Abertura (landing) -->
+  <section id="screen-landing" class="screen active">
+    <div class="landing-wrap">
+      <div class="landing-hero">
+        <div class="landing-dot"></div>
+        <h1>Social Station</h1>
+        <p>O lugar onde você cria seu avatar, entra em salas, faz amigos e monta a sua estação social.</p>
+      </div>
+
+      <div class="auth-card">
+        <div class="auth-tabs">
+          <button class="auth-tab active" id="authTabLogin">Entrar</button>
+          <button class="auth-tab" id="authTabSignup">Criar conta</button>
+        </div>
+
+        <div class="auth-form active" id="loginForm">
+          <input type="text" id="loginUsername" placeholder="Usuário" maxlength="30" />
+          <input type="password" id="loginPassword" placeholder="Senha" maxlength="60" />
+          <button class="btn btn-primary" id="btnLogin">Entrar</button>
+        </div>
+
+        <div class="auth-form" id="signupForm">
+          <input type="text" id="signupUsername" placeholder="Escolha um usuário" maxlength="30" />
+          <input type="password" id="signupPassword" placeholder="Escolha uma senha (mín. 4 caracteres)" maxlength="60" />
+          <button class="btn btn-primary" id="btnSignup">Criar conta</button>
+        </div>
+
+        <div id="authError" class="auth-error"></div>
+
+        <div class="fb-login-box">
+          <button class="btn btn-fb" id="btnFacebookLoginLanding">📘 Entrar com Facebook</button>
+          <span class="fb-hint">Preenche nome e foto automaticamente</span>
+        </div>
+
+        <button class="btn btn-ghost" id="btnSkipAuth">Só quero testar, sem criar conta →</button>
+      </div>
+    </div>
+  </section>
+
   <!-- TELA 1: Perfil + avatar -->
-  <section id="screen-profile" class="screen active">
+  <section id="screen-profile" class="screen">
     <div class="wrap center-stage">
       <h2>Crie seu perfil</h2>
       <p class="tagline">Tire uma foto ou escolha uma selfie. A gente transforma num avatar 3D pra te representar nas salas.</p>
@@ -386,12 +450,7 @@
       <input type="text" id="cityInput" placeholder="Onde você mora?" maxlength="60" />
       <input type="text" id="workInput" placeholder="Onde você trabalha / o que faz?" maxlength="60" />
 
-      <button class="btn btn-primary" id="btnContinue">Entrar na Feira →</button>
-
-      <div class="fb-login-box">
-        <button class="btn btn-fb" id="btnFacebookLogin">📘 Entrar com Facebook</button>
-        <span class="fb-hint">Preenche nome e foto automaticamente</span>
-      </div>
+      <button class="btn btn-primary" id="btnContinue">Concluir perfil →</button>
     </div>
   </section>
 
@@ -508,7 +567,7 @@
   <!-- TELA: Marketplace -->
   <section id="screen-marketplace" class="screen">
     <div class="wrap">
-      <div class="section-title"><h2>🛒 Marketplace</h2><span id="marketHint"></span></div>
+      <div class="section-title"><h2>🛒 Feira</h2><span id="marketHint"></span></div>
       <div class="composer-card">
         <input type="text" id="listingTitle" placeholder="O que você está vendendo?" maxlength="60" />
         <input type="text" id="listingPrice" placeholder="Preço (ex: R$ 50)" maxlength="20" />
@@ -565,31 +624,13 @@ const socket = io();
 
 // -------- Estado local --------
 let myProfile = { name: '', avatarUrl: null, avatarType: null, avatarConfig: null, status: 'disponivel', photoUrl: null, city: '', work: '' };
-
-// -------- Retorno do login com Facebook --------
-(function checkFacebookReturn(){
-  const params = new URLSearchParams(window.location.search);
-  const fbName = params.get('fb_name');
-  const fbPhoto = params.get('fb_photo');
-  const fbError = params.get('fb_error');
-  if (fbName) document.getElementById('nameInput').value = fbName;
-  if (fbPhoto) {
-    myProfile.photoUrl = fbPhoto;
-    document.getElementById('profilePhotoPreview').innerHTML = `<img src="${fbPhoto}" />`;
-  }
-  if (fbError) {
-    alert('Não deu pra entrar com o Facebook agora. Você pode continuar preenchendo manualmente.');
-  }
-  if (fbName || fbPhoto || fbError) {
-    window.history.replaceState({}, '', window.location.pathname);
-  }
-})();
 let currentRoom = null;
 let usersInRoom = {};
 let typingTimeout = null;
 
 // -------- Elementos --------
 const screens = {
+  landing: document.getElementById('screen-landing'),
   profile: document.getElementById('screen-profile'),
   feed: document.getElementById('screen-feed'),
   lobby: document.getElementById('screen-lobby'),
@@ -606,6 +647,28 @@ function showScreen(name){
   screens[name].classList.add('active');
   updateGlobalNav(name);
 }
+
+// -------- Retorno do login com Facebook --------
+(function checkFacebookReturn(){
+  const params = new URLSearchParams(window.location.search);
+  const fbName = params.get('fb_name');
+  const fbPhoto = params.get('fb_photo');
+  const fbError = params.get('fb_error');
+  if (fbName || fbPhoto) {
+    if (fbName) document.getElementById('nameInput').value = fbName;
+    if (fbPhoto) {
+      myProfile.photoUrl = fbPhoto;
+      document.getElementById('profilePhotoPreview').innerHTML = `<img src="${fbPhoto}" />`;
+    }
+    showScreen('profile'); // veio do Facebook: pula a tela de login e vai direto pro perfil
+  }
+  if (fbError) {
+    alert('Não deu pra entrar com o Facebook agora. Você pode continuar preenchendo manualmente.');
+  }
+  if (fbName || fbPhoto || fbError) {
+    window.history.replaceState({}, '', window.location.pathname);
+  }
+})();
 
 // -------- Avatar (Avaturn) --------
 // O Ready Player Me encerrou o serviço público em 2026 (foi comprado pela Netflix).
@@ -919,6 +982,55 @@ document.getElementById('profilePhotoInput').addEventListener('change', async (e
   }
 });
 
+// -------- Login / Criar conta --------
+document.getElementById('authTabLogin').addEventListener('click', () => {
+  document.getElementById('authTabLogin').classList.add('active');
+  document.getElementById('authTabSignup').classList.remove('active');
+  document.getElementById('loginForm').classList.add('active');
+  document.getElementById('signupForm').classList.remove('active');
+  document.getElementById('authError').textContent = '';
+});
+document.getElementById('authTabSignup').addEventListener('click', () => {
+  document.getElementById('authTabSignup').classList.add('active');
+  document.getElementById('authTabLogin').classList.remove('active');
+  document.getElementById('signupForm').classList.add('active');
+  document.getElementById('loginForm').classList.remove('active');
+  document.getElementById('authError').textContent = '';
+});
+
+document.getElementById('btnLogin').addEventListener('click', () => {
+  const username = document.getElementById('loginUsername').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  socket.emit('login', { username, password });
+});
+document.getElementById('btnSignup').addEventListener('click', () => {
+  const username = document.getElementById('signupUsername').value.trim();
+  const password = document.getElementById('signupPassword').value;
+  socket.emit('signup', { username, password });
+});
+document.getElementById('btnSkipAuth').addEventListener('click', () => {
+  showScreen('profile'); // modo teste, sem conta — igual funcionava antes
+});
+
+socket.on('auth_error', (msg) => {
+  document.getElementById('authError').textContent = msg;
+});
+socket.on('auth_success', ({ isNewUser, profile }) => {
+  document.getElementById('authError').textContent = '';
+  if (isNewUser || !profile) {
+    showScreen('profile'); // conta nova (ou sem perfil salvo ainda) — monta o perfil agora
+    return;
+  }
+  // conta já tinha perfil salvo — entra direto, sem repetir a criação
+  myProfile = { ...myProfile, ...profile };
+  if (myProfile.avatarType) renderAvatarPreview();
+  socket.emit('get_rooms');
+  socket.emit('get_posts');
+  socket.emit('get_online_users');
+  socket.emit('get_listings');
+  showScreen('feed');
+});
+
 document.getElementById('btnContinue').addEventListener('click', () => {
   const name = document.getElementById('nameInput').value.trim() || 'Visitante';
   myProfile.name = name;
@@ -932,7 +1044,7 @@ document.getElementById('btnContinue').addEventListener('click', () => {
   showScreen('feed');
 });
 
-document.getElementById('btnFacebookLogin').addEventListener('click', () => {
+document.getElementById('btnFacebookLoginLanding').addEventListener('click', () => {
   window.location.href = '/auth/facebook';
 });
 
@@ -944,7 +1056,7 @@ const NAV_ITEMS = [
   { screen: 'messages',    icon: '✉️', label: 'Mensagens' },
   { screen: 'photos',      icon: '🖼️', label: 'Fotos' },
   { screen: 'videos',      icon: '🎥', label: 'Vídeos' },
-  { screen: 'marketplace', icon: '🛒', label: 'Marketplace' },
+  { screen: 'marketplace', icon: '🛒', label: 'Feira' },
 ];
 const NAV_SCREENS = new Set(NAV_ITEMS.map(i => i.screen));
 const globalNav = document.getElementById('globalNav');

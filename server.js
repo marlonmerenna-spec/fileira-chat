@@ -1,5 +1,6 @@
 const express = require('express');
 const http = require('http');
+const crypto = require('crypto');
 const { Server } = require('socket.io');
 const path = require('path');
 const os = require('os');
@@ -109,6 +110,16 @@ function genCode() {
   return Math.random().toString(36).substring(2, 7).toUpperCase();
 }
 
+// ---- Contas (login/cadastro) — em memória, some se o servidor reiniciar ----
+const accounts = new Map(); // username (minúsculo) -> { username, passwordHash, salt, profile }
+
+function hashPassword(password, salt) {
+  return crypto.scryptSync(password, salt, 64).toString('hex');
+}
+function normalizeUsername(u) {
+  return (u || '').trim().toLowerCase();
+}
+
 // ---- Marketplace (em memória) ----
 const listings = [];
 function serializeListing(l) {
@@ -157,6 +168,44 @@ io.on('connection', (socket) => {
   socket.data.profile = null;
   socket.data.roomId = null;
 
+  socket.on('signup', ({ username, password }) => {
+    const uname = normalizeUsername(username);
+    if (!uname || !password || password.length < 4) {
+      socket.emit('auth_error', 'Preencha um usuário e uma senha com pelo menos 4 caracteres.');
+      return;
+    }
+    if (accounts.has(uname)) {
+      socket.emit('auth_error', 'Esse nome de usuário já está em uso.');
+      return;
+    }
+    const salt = crypto.randomBytes(16).toString('hex');
+    const account = {
+      username: uname,
+      passwordHash: hashPassword(password, salt),
+      salt,
+      profile: null, // preenchido quando a pessoa terminar de montar o perfil
+    };
+    accounts.set(uname, account);
+    socket.data.username = uname;
+    socket.emit('auth_success', { isNewUser: true, profile: null });
+  });
+
+  socket.on('login', ({ username, password }) => {
+    const uname = normalizeUsername(username);
+    const account = accounts.get(uname);
+    if (!account || hashPassword(password, account.salt) !== account.passwordHash) {
+      socket.emit('auth_error', 'Usuário ou senha incorretos.');
+      return;
+    }
+    socket.data.username = uname;
+    if (account.profile) {
+      socket.data.profile = { ...account.profile, status: 'disponivel' };
+      onlineUsers.set(socket.id, socket.data.profile);
+      broadcastOnlineUsers();
+    }
+    socket.emit('auth_success', { isNewUser: !account.profile, profile: account.profile });
+  });
+
   socket.on('set_profile', ({ name, avatarUrl, avatarType, avatarConfig, photoUrl, city, work }) => {
     socket.data.profile = {
       name: (name || 'Visitante').slice(0, 24),
@@ -169,6 +218,9 @@ io.on('connection', (socket) => {
       status: 'disponivel',
     };
     onlineUsers.set(socket.id, socket.data.profile);
+    if (socket.data.username && accounts.has(socket.data.username)) {
+      accounts.get(socket.data.username).profile = socket.data.profile;
+    }
     socket.emit('profile_ack', socket.data.profile);
     broadcastOnlineUsers();
   });
