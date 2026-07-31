@@ -10,17 +10,19 @@
 <script src="/socket.io/socket.io.js"></script>
 <style>
   :root{
-    --bg: #E4EBF5;
-    --bg-soft: #FFFFFF;
-    --panel: #FFFFFF;
-    --panel-hover: #EEF3FA;
-    --border: #C9D6E7;
-    --text: #223047;
-    --text-muted: #6C7C93;
-    --accent: #34568F;
-    --accent-soft: rgba(52, 86, 143, 0.12);
-    --mint: #3E9C5C;
-    --radius: 12px;
+    --bg: #0A0C1B;
+    --bg-soft: #12162B;
+    --panel: #161B33;
+    --panel-hover: #1E2440;
+    --border: #2A3155;
+    --text: #F2F3FA;
+    --text-muted: #8A90B3;
+    --accent: #7B5CF0;
+    --accent-2: #3E7BFA;
+    --accent-gradient: linear-gradient(135deg, #3E7BFA, #9B4CE0);
+    --accent-soft: rgba(123, 92, 240, 0.18);
+    --mint: #3ECF8E;
+    --radius: 14px;
     --font-display: 'Nunito', sans-serif;
     --font-body: 'Nunito', sans-serif;
   }
@@ -48,7 +50,7 @@
     background: var(--bg-soft);
   }
   .brand{ display:flex; align-items:center; gap:10px; }
-  .brand-dot{ width:12px; height:12px; border-radius:50%; background: var(--accent); box-shadow: 0 0 12px var(--accent); }
+  .brand-dot{ width:14px; height:14px; border-radius:5px; background: var(--accent-gradient); box-shadow: 0 0 10px rgba(123,92,240,0.6); }
   .brand h1{ font-size: 20px; letter-spacing: 0.3px; }
 
   /* ---------- Perfil / avatar ---------- */
@@ -68,8 +70,8 @@
   }
   .btn:hover{ background: var(--panel-hover); transform: translateY(-1px); }
   .btn:active{ transform: translateY(0); }
-  .btn-primary{ background: var(--accent); border-color: var(--accent); color: #FFFFFF; }
-  .btn-primary:hover{ background: #416bab; }
+  .btn-primary{ background: var(--accent-gradient); border-color: transparent; color: #FFFFFF; }
+  .btn-primary:hover{ filter: brightness(1.12); }
   .btn-ghost{ background: transparent; }
   .btn-row{ display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
 
@@ -107,7 +109,7 @@
     background: var(--bg); border:2px solid var(--border);
   }
   .my-profile-card .mp-photo img{ width:100%; height:100%; object-fit:cover; }
-  .my-profile-card .mp-photo .fallback{ width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-family: var(--font-display); font-size:22px; background: linear-gradient(135deg, #5B7FB5, #34568F); color:#fff; }
+  .my-profile-card .mp-photo .fallback{ width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-family: var(--font-display); font-size:22px; background: var(--accent-gradient); color:#fff; }
   .my-profile-card .mp-info{ flex:1; min-width:0; }
   .my-profile-card .mp-name{ font-size:16px; font-weight:800; font-family: var(--font-display); }
   .my-profile-card .mp-line{ font-size:12.5px; color: var(--text-muted); margin-top:2px; display:flex; align-items:center; gap:5px; }
@@ -136,7 +138,7 @@
   .post-head{ display:flex; align-items:center; gap:10px; margin-bottom:8px; }
   .post-avatar{ width:38px; height:38px; border-radius:50%; overflow:hidden; background: var(--bg-soft); flex:0 0 auto; }
   .post-avatar model-viewer{ width:100%; height:100%; }
-  .post-avatar .fallback{ width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:13px; font-family: var(--font-display); background: linear-gradient(135deg, #5B7FB5, #34568F); color:#fff; }
+  .post-avatar .fallback{ width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:13px; font-family: var(--font-display); background: var(--accent-gradient); color:#fff; }
   .post-head .who{ display:flex; flex-direction:column; }
   .post-head .who .n{ font-size:14px; font-weight:600; }
   .post-head .who .t{ font-size:11px; color: var(--text-muted); }
@@ -157,7 +159,7 @@
   .comment-row{ display:flex; gap:8px; align-items:flex-start; }
   .comment-avatar{ width:28px; height:28px; border-radius:50%; overflow:hidden; flex:0 0 auto; background: var(--bg-soft); }
   .comment-avatar model-viewer, .comment-avatar svg{ width:100%; height:100%; }
-  .comment-avatar .fallback{ width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:11px; font-family: var(--font-display); background: linear-gradient(135deg, #5B7FB5, #34568F); color:#fff; }
+  .comment-avatar .fallback{ width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:11px; font-family: var(--font-display); background: var(--accent-gradient); color:#fff; }
   .comment-bubble{ background: var(--bg-soft); border-radius:12px; padding:7px 12px; font-size:13px; }
   .comment-bubble .c-name{ font-weight:700; margin-right:6px; }
   .comment-composer{ display:flex; gap:8px; }
@@ -199,7 +201,7 @@
   .contact-card:hover{ border-color: var(--accent); }
   .contact-avatar{ width:42px; height:42px; border-radius:50%; overflow:hidden; background: var(--bg-soft); flex:0 0 auto; }
   .contact-avatar model-viewer{ width:100%; height:100%; }
-  .contact-avatar .fallback{ width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:14px; font-family: var(--font-display); background: linear-gradient(135deg, #5B7FB5, #34568F); color:#fff; }
+  .contact-avatar .fallback{ width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:14px; font-family: var(--font-display); background: var(--accent-gradient); color:#fff; }
   .contact-info .n{ font-size:14px; font-weight:600; }
   .contact-info .s{ font-size:11px; color: var(--text-muted); }
   .empty-contacts{ text-align:center; color: var(--text-muted); font-size:13px; padding: 30px 0; }
@@ -213,7 +215,7 @@
   .profile-view-card{ display:flex; flex-direction:column; align-items:center; gap:12px; padding: 30px 0; }
   .profile-big-avatar{ width:150px; height:150px; border-radius:50%; overflow:hidden; background: var(--panel); border:2px solid var(--border); position:relative; }
   .profile-big-avatar model-viewer{ width:100%; height:100%; }
-  .profile-big-avatar .fallback{ width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:40px; font-family: var(--font-display); background: linear-gradient(135deg, #5B7FB5, #34568F); color:#fff; }
+  .profile-big-avatar .fallback{ width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:40px; font-family: var(--font-display); background: var(--accent-gradient); color:#fff; }
   .profile-big-avatar .mood-badge{ width:34px; height:34px; font-size:20px; bottom:4px; right:4px; }
   .profile-status-pill{ font-size:13px; color: var(--text-muted); background: var(--panel); border:1px solid var(--border); border-radius:100px; padding:6px 14px; }
   .profile-info-list{ display:flex; flex-direction:column; gap:8px; margin-top: 16px; width:100%; max-width:320px; }
@@ -257,10 +259,22 @@
     flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
     gap: 28px; padding: 30px 20px; max-width: 420px; margin: 0 auto; text-align:center;
   }
-  .landing-hero{ display:flex; flex-direction:column; align-items:center; gap:10px; }
-  .landing-dot{ width:52px; height:52px; border-radius:16px; background: var(--accent); box-shadow: 0 8px 20px rgba(52,86,143,0.35); }
-  .landing-hero h1{ font-size: 30px; color: var(--accent); }
-  .landing-hero p{ color: var(--text-muted); font-size:14px; max-width:320px; }
+  .landing-hero{ display:flex; flex-direction:column; align-items:center; gap:8px; }
+  .landing-logo{ width:76px; height:76px; filter: drop-shadow(0 10px 24px rgba(123,92,240,0.45)); margin-bottom:6px; }
+  .landing-logo svg{ width:100%; height:100%; }
+  .landing-hero h1{ font-size: 34px; font-weight:800; letter-spacing:-0.5px; }
+  .landing-hero h1 .w-white{ color: var(--text); }
+  .landing-hero h1 .w-grad{
+    background: var(--accent-gradient); -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .landing-tagline{ color: var(--text-muted); font-size:11.5px; letter-spacing:2.5px; font-weight:700; margin:2px 0 0; }
+  .landing-sub{ color: var(--text-muted); font-size:14px; max-width:320px; margin-top:6px; }
+
+  .pillars-row{ display:flex; justify-content:space-between; gap:6px; width:100%; }
+  .pillar{ display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; text-align:center; }
+  .pillar .p-icon{ font-size:20px; }
+  .pillar .p-label{ font-size:11px; font-weight:700; color: var(--text); line-height:1.4; }
+  .pillar .p-label small{ font-weight:400; color: var(--text-muted); font-size:10px; }
 
   .auth-card{
     width:100%; background: var(--panel); border:1px solid var(--border); border-radius: var(--radius);
@@ -275,7 +289,7 @@
   .auth-form{ display:none; flex-direction:column; gap:10px; }
   .auth-form.active{ display:flex; }
   .auth-form input{ width:100%; padding:12px 14px; border-radius:10px; border:1px solid var(--border); background: var(--bg); color: var(--text); font-family: var(--font-body); font-size:14px; }
-  .auth-error{ color:#C0392B; font-size:12.5px; min-height:16px; }
+  .auth-error{ color:#FF6B7A; font-size:12.5px; min-height:16px; }
 
   /* ---------- Navegação global (ícones) ---------- */
   .global-nav{
@@ -384,7 +398,7 @@
   .avatar-bust model-viewer{ width:100%; height:100%; }
   .avatar-bust .fallback{
     width:100%; height:100%; display:flex; align-items:center; justify-content:center;
-    font-family: var(--font-display); font-size: 22px; background: linear-gradient(135deg, #5B7FB5, #34568F); color:#fff;
+    font-family: var(--font-display); font-size: 22px; background: var(--accent-gradient); color:#fff;
     color: var(--text);
   }
   .avatar-slot .name{ font-size:11px; color: var(--text-muted); margin-top:6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -430,9 +444,31 @@
   <section id="screen-landing" class="screen active">
     <div class="landing-wrap">
       <div class="landing-hero">
-        <div class="landing-dot"></div>
-        <h1>Social Station</h1>
-        <p>O lugar onde você cria seu avatar, entra em salas, faz amigos e monta a sua estação social.</p>
+        <div class="landing-logo">
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#3E7BFA"/>
+                <stop offset="100%" stop-color="#9B4CE0"/>
+              </linearGradient>
+            </defs>
+            <rect x="4" y="4" width="92" height="92" rx="24" fill="url(#logoGrad)"/>
+            <path d="M66 30 Q40 30 40 46 Q40 60 60 60 Q80 60 80 74 Q80 90 54 90"
+                  fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round"/>
+            <circle cx="66" cy="30" r="7" fill="#fff"/>
+            <circle cx="54" cy="90" r="7" fill="#fff"/>
+          </svg>
+        </div>
+        <h1><span class="w-white">Social</span> <span class="w-grad">Station</span></h1>
+        <p class="landing-tagline">CONNECT · SHARE · EXPLORE · BELONG</p>
+        <p class="landing-sub">O lugar onde você cria seu avatar, entra em salas, faz amigos e monta a sua estação social.</p>
+      </div>
+
+      <div class="pillars-row">
+        <div class="pillar"><span class="p-icon">👥</span><span class="p-label">Connect<br><small>com pessoas</small></span></div>
+        <div class="pillar"><span class="p-icon">💬</span><span class="p-label">Share<br><small>suas ideias</small></span></div>
+        <div class="pillar"><span class="p-icon">🌐</span><span class="p-label">Explore<br><small>novas conexões</small></span></div>
+        <div class="pillar"><span class="p-icon">💜</span><span class="p-label">Belong<br><small>faça parte</small></span></div>
       </div>
 
       <div class="auth-card">
@@ -1660,7 +1696,7 @@ function renderMarket(){
   }
   grid.innerHTML = allListings.map(l => `
     <div class="market-card">
-      ${l.image ? `<img src="${l.image}" />` : `<img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23E4EBF5'/%3E%3C/svg%3E" />`}
+      ${l.image ? `<img src="${l.image}" />` : `<img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23161B33'/%3E%3C/svg%3E" />`}
       <div class="m-body">
         <div class="m-price">${escapeHtml(l.price || 'Combinar')}</div>
         <div class="m-title">${escapeHtml(l.title)}</div>
