@@ -139,13 +139,27 @@ function serializeBizPost(b) {
   };
 }
 
+// ---- Seguidores/Seguindo (em memória, por socket.id — some ao desconectar) ----
+const followers = new Map(); // targetId -> Set(followerId)
+const following = new Map(); // followerId -> Set(targetId)
+function ensureSet(map, key) {
+  if (!map.has(key)) map.set(key, new Set());
+  return map.get(key);
+}
+function followCounts(userId) {
+  return {
+    followers: followers.has(userId) ? followers.get(userId).size : 0,
+    following: following.has(userId) ? following.get(userId).size : 0,
+  };
+}
+
 // ---- Usuários online e status (tipo MSN) ----
 const onlineUsers = new Map(); // socketId -> { name, avatarUrl, status }
 
 function broadcastOnlineUsers() {
   const list = Array.from(onlineUsers.entries()).map(([id, u]) => ({
     id, name: u.name, avatarUrl: u.avatarUrl, avatarType: u.avatarType, avatarConfig: u.avatarConfig,
-    photoUrl: u.photoUrl, city: u.city, work: u.work, status: u.status,
+    photoUrl: u.photoUrl, city: u.city, work: u.work, theme: u.theme, profileSongUrl: u.profileSongUrl, status: u.status,
   }));
   io.emit('online_users', list);
 }
@@ -218,7 +232,7 @@ io.on('connection', (socket) => {
     socket.emit('auth_success', { isNewUser: !account.profile, profile: account.profile });
   });
 
-  socket.on('set_profile', ({ name, avatarUrl, avatarType, avatarConfig, photoUrl, city, work }) => {
+  socket.on('set_profile', ({ name, avatarUrl, avatarType, avatarConfig, photoUrl, city, work, theme, profileSongUrl }) => {
     socket.data.profile = {
       name: (name || 'Visitante').slice(0, 24),
       avatarUrl: avatarUrl || null,
@@ -227,6 +241,8 @@ io.on('connection', (socket) => {
       photoUrl: photoUrl || null,
       city: (city || '').slice(0, 60),
       work: (work || '').slice(0, 60),
+      theme: (theme || 'nebulosa').slice(0, 20),
+      profileSongUrl: (profileSongUrl || '').trim().slice(0, 500),
       status: 'disponivel',
     };
     onlineUsers.set(socket.id, socket.data.profile);
@@ -246,6 +262,40 @@ io.on('connection', (socket) => {
 
   socket.on('get_online_users', () => {
     broadcastOnlineUsers();
+  });
+
+  socket.on('follow_user', ({ targetId }) => {
+    if (!targetId || targetId === socket.id) return;
+    ensureSet(followers, targetId).add(socket.id);
+    ensureSet(following, socket.id).add(targetId);
+    io.to(targetId).emit('follow_changed', { userId: targetId, ...followCounts(targetId) });
+    io.to(socket.id).emit('follow_changed', { userId: socket.id, ...followCounts(socket.id) });
+  });
+
+  socket.on('unfollow_user', ({ targetId }) => {
+    if (!targetId) return;
+    if (followers.has(targetId)) followers.get(targetId).delete(socket.id);
+    if (following.has(socket.id)) following.get(socket.id).delete(targetId);
+    io.to(targetId).emit('follow_changed', { userId: targetId, ...followCounts(targetId) });
+    io.to(socket.id).emit('follow_changed', { userId: socket.id, ...followCounts(socket.id) });
+  });
+
+  socket.on('get_follow_info', ({ userId }) => {
+    const target = userId || socket.id;
+    const iFollow = following.has(socket.id) && following.get(socket.id).has(target);
+    socket.emit('follow_info', { userId: target, ...followCounts(target), iFollow });
+  });
+
+  socket.on('get_follow_list', ({ userId, type }) => {
+    const target = userId || socket.id;
+    const idSet = type === 'followers'
+      ? (followers.get(target) || new Set())
+      : (following.get(target) || new Set());
+    const list = Array.from(idSet).map((id) => {
+      const u = onlineUsers.get(id);
+      return u ? { id, name: u.name, avatarUrl: u.avatarUrl, avatarType: u.avatarType, avatarConfig: u.avatarConfig } : null;
+    }).filter(Boolean);
+    socket.emit('follow_list', { userId: target, type, list });
   });
 
   socket.on('dm_send', ({ toId, text }) => {
@@ -454,6 +504,11 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     leaveCurrentRoom(socket);
     onlineUsers.delete(socket.id);
+    // limpa as relações de seguir dessa pessoa (só pra quem não tinha conta salva mesmo)
+    followers.delete(socket.id);
+    following.delete(socket.id);
+    followers.forEach((set) => set.delete(socket.id));
+    following.forEach((set) => set.delete(socket.id));
     broadcastOnlineUsers();
   });
 
