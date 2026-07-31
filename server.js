@@ -8,7 +8,7 @@ const os = require('os');
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
-  maxHttpBufferSize: 6 * 1024 * 1024, // permite fotos nos posts do feed
+  maxHttpBufferSize: 20 * 1024 * 1024, // permite fotos e vídeos curtos gravados na hora
 });
 
 app.use(express.static(path.join(__dirname, 'public')));
@@ -126,6 +126,16 @@ function serializeListing(l) {
   return {
     id: l.id, sellerId: l.sellerId, sellerName: l.sellerName,
     title: l.title, price: l.price, description: l.description, image: l.image, ts: l.ts,
+  };
+}
+
+// ---- Business (em memória) — divulgação de trabalho/serviço ----
+const bizPosts = [];
+function serializeBizPost(b) {
+  return {
+    id: b.id, authorId: b.authorId, authorName: b.authorName,
+    businessName: b.businessName, category: b.category, description: b.description,
+    contact: b.contact, image: b.image, ts: b.ts,
   };
 }
 
@@ -411,6 +421,30 @@ io.on('connection', (socket) => {
     listings.unshift(listing);
     if (listings.length > 200) listings.pop();
     io.emit('new_listing', serializeListing(listing));
+  });
+
+  socket.on('get_biz_posts', () => {
+    socket.emit('biz_post_list', bizPosts.map(serializeBizPost));
+  });
+
+  socket.on('create_biz_post', ({ businessName, category, description, contact, image }) => {
+    if (!socket.data.profile) return;
+    const cleanName = (businessName || '').trim().slice(0, 60);
+    if (!cleanName) return;
+    const bizPost = {
+      id: Date.now() + '_' + socket.id,
+      authorId: socket.id,
+      authorName: socket.data.profile.name,
+      businessName: cleanName,
+      category: (category || '').trim().slice(0, 40),
+      description: (description || '').trim().slice(0, 400),
+      contact: (contact || '').trim().slice(0, 80),
+      image: image || null,
+      ts: Date.now(),
+    };
+    bizPosts.unshift(bizPost);
+    if (bizPosts.length > 200) bizPosts.pop();
+    io.emit('new_biz_post', serializeBizPost(bizPost));
   });
 
   socket.on('leave_room', () => {

@@ -328,6 +328,23 @@
   .video-card{ background: var(--panel); border:1px solid var(--border); border-radius: var(--radius); padding:14px; }
   .video-card .who{ font-size:13px; font-weight:600; margin-bottom:8px; }
   .video-card video, .video-card iframe{ width:100%; border-radius:10px; border:none; aspect-ratio:16/9; }
+  .or-divider{ text-align:center; color: var(--text-muted); font-size:12px; margin: 2px 0; }
+
+  .recorder-overlay{
+    position:fixed; inset:0; background: rgba(6,7,16,0.9); z-index:60; display:none;
+    align-items:center; justify-content:center; padding:16px;
+  }
+  .recorder-overlay.active{ display:flex; }
+  .recorder-box{
+    width:100%; max-width:420px; background: var(--panel); border:1px solid var(--border);
+    border-radius: var(--radius); padding:16px; display:flex; flex-direction:column; gap:12px;
+  }
+  .recorder-header{ display:flex; align-items:center; justify-content:space-between; }
+  .recorder-header h3{ font-size:16px; }
+  #recorderPreview{ width:100%; aspect-ratio:4/3; border-radius:12px; background:#000; object-fit:cover; }
+  .recorder-timer{ text-align:center; font-size:13px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+  .recorder-controls{ display:flex; gap:10px; justify-content:center; }
+  .recorder-error{ color:#FF6B7A; font-size:12.5px; text-align:center; min-height:14px; }
 
   .market-grid{ display:grid; grid-template-columns: repeat(2, 1fr); gap:12px; padding-bottom:24px; }
   .market-card{ background: var(--panel); border:1px solid var(--border); border-radius: var(--radius); overflow:hidden; }
@@ -336,6 +353,17 @@
   .market-card .m-price{ color: var(--accent); font-weight:700; font-size:14px; }
   .market-card .m-title{ font-size:13px; margin:2px 0; }
   .market-card .m-seller{ font-size:11px; color: var(--text-muted); }
+
+  .biz-list{ display:flex; flex-direction:column; gap:14px; padding-bottom:24px; }
+  .biz-card{ background: var(--panel); border:1px solid var(--border); border-radius: var(--radius); overflow:hidden; }
+  .biz-card img{ width:100%; max-height:200px; object-fit:cover; display:block; background: var(--bg); }
+  .biz-card .b-body{ padding:14px; }
+  .biz-card .b-name{ font-size:16px; font-weight:800; font-family: var(--font-display); }
+  .biz-card .b-category{ display:inline-block; margin-top:4px; font-size:11px; font-weight:700; color: var(--accent-2); background: var(--accent-soft); padding:3px 10px; border-radius:100px; }
+  .biz-card .b-desc{ font-size:13.5px; color: var(--text); margin:10px 0; line-height:1.5; white-space:pre-wrap; }
+  .biz-card .b-footer{ display:flex; align-items:center; justify-content:space-between; margin-top:8px; padding-top:10px; border-top:1px solid var(--border); }
+  .biz-card .b-author{ font-size:11.5px; color: var(--text-muted); }
+  .biz-card .b-contact{ font-size:12.5px; font-weight:700; color: var(--mint); }
 
   /* ---------- Lobby ---------- */
   .section-title{ display:flex; align-items:baseline; justify-content:space-between; margin: 22px 0 12px; }
@@ -642,15 +670,37 @@
     <div class="wrap">
       <div class="section-title"><h2>🎥 Vídeos</h2><span></span></div>
       <div class="composer-card">
+        <button class="btn btn-primary" id="btnOpenRecorder">🔴 Gravar vídeo agora</button>
+        <div class="or-divider">ou</div>
         <input type="text" id="videoUrlInput" placeholder="Cole o link de um vídeo (YouTube ou .mp4)" />
         <div class="composer-actions">
           <span></span>
-          <button class="btn btn-primary" id="btnPublishVideo">Publicar vídeo</button>
+          <button class="btn btn-primary" id="btnPublishVideo">Publicar link</button>
         </div>
       </div>
       <div class="video-list" id="videoList"></div>
     </div>
   </section>
+
+  <!-- Overlay de gravação de vídeo (câmera + microfone) -->
+  <div class="recorder-overlay" id="recorderOverlay">
+    <div class="recorder-box">
+      <div class="recorder-header">
+        <h3>Gravar vídeo</h3>
+        <button class="btn btn-ghost" id="btnCloseRecorder">Fechar ✕</button>
+      </div>
+      <video id="recorderPreview" autoplay muted playsinline></video>
+      <div class="recorder-timer" id="recorderTimer">00:00 / 00:30</div>
+      <div class="recorder-controls" id="recorderControls">
+        <button class="btn btn-primary" id="btnStartRecording">🔴 Iniciar gravação</button>
+      </div>
+      <div class="recorder-controls" id="recorderReviewControls" style="display:none;">
+        <button class="btn btn-ghost" id="btnDiscardRecording">Descartar</button>
+        <button class="btn btn-primary" id="btnPublishRecording">Publicar vídeo</button>
+      </div>
+      <div class="recorder-error" id="recorderError"></div>
+    </div>
+  </div>
 
   <!-- TELA: Marketplace -->
   <section id="screen-marketplace" class="screen">
@@ -672,6 +722,30 @@
         </div>
       </div>
       <div class="market-grid" id="marketGrid"></div>
+    </div>
+  </section>
+
+  <!-- TELA: Business -->
+  <section id="screen-business" class="screen">
+    <div class="wrap">
+      <div class="section-title"><h2>💼 Business</h2><span>Divulgue seu trabalho ou serviço</span></div>
+      <div class="composer-card">
+        <input type="text" id="bizName" placeholder="Nome do seu negócio ou serviço" maxlength="60" />
+        <input type="text" id="bizCategory" placeholder="Categoria (ex: Design, Culinária, Aulas...)" maxlength="40" />
+        <textarea id="bizDesc" placeholder="Descreva o que você oferece" maxlength="400"></textarea>
+        <input type="text" id="bizContact" placeholder="Contato (WhatsApp, e-mail, Instagram...)" maxlength="80" />
+        <div id="bizImgPreview"></div>
+        <input type="file" id="bizImageCameraInput" accept="image/*" capture="environment" style="display:none" />
+        <input type="file" id="bizImageGalleryInput" accept="image/*" style="display:none" />
+        <div class="composer-actions">
+          <div class="btn-row">
+            <button class="btn btn-ghost" id="btnTakeBizPhoto">📷 Tirar foto</button>
+            <button class="btn btn-ghost" id="btnChooseBizPhoto">🖼️ Galeria</button>
+          </div>
+          <button class="btn btn-primary" id="btnPublishBiz">Divulgar</button>
+        </div>
+      </div>
+      <div class="biz-list" id="bizList"></div>
     </div>
   </section>
 
@@ -733,6 +807,7 @@ const screens = {
   photos: document.getElementById('screen-photos'),
   videos: document.getElementById('screen-videos'),
   marketplace: document.getElementById('screen-marketplace'),
+  business: document.getElementById('screen-business'),
 };
 function showScreen(name){
   Object.values(screens).forEach(s => s.classList.remove('active'));
@@ -1147,6 +1222,7 @@ socket.on('auth_success', ({ isNewUser, profile }) => {
   socket.emit('get_posts');
   socket.emit('get_online_users');
   socket.emit('get_listings');
+  socket.emit('get_biz_posts');
   renderMyProfileCard();
   showScreen('feed');
 });
@@ -1161,6 +1237,7 @@ document.getElementById('btnContinue').addEventListener('click', () => {
   socket.emit('get_posts');
   socket.emit('get_online_users');
   socket.emit('get_listings');
+  socket.emit('get_biz_posts');
   renderMyProfileCard();
   showScreen('feed');
 });
@@ -1178,6 +1255,7 @@ const NAV_ITEMS = [
   { screen: 'photos',      icon: '🖼️', label: 'Fotos' },
   { screen: 'videos',      icon: '🎥', label: 'Vídeos' },
   { screen: 'marketplace', icon: '🛒', label: 'Feira' },
+  { screen: 'business',    icon: '💼', label: 'Business' },
 ];
 const NAV_SCREENS = new Set(NAV_ITEMS.map(i => i.screen));
 const globalNav = document.getElementById('globalNav');
@@ -1192,6 +1270,7 @@ globalNav.querySelectorAll('.nav-item').forEach(btn => {
     if (btn.dataset.screen === 'photos') renderPhotosScreen();
     if (btn.dataset.screen === 'videos') renderVideosScreen();
     if (btn.dataset.screen === 'marketplace') socket.emit('get_listings');
+    if (btn.dataset.screen === 'business') socket.emit('get_biz_posts');
   });
 });
 function updateGlobalNav(activeScreen){
@@ -1658,6 +1737,135 @@ document.getElementById('btnPublishVideo').addEventListener('click', () => {
   input.value = '';
 });
 
+// -------- Gravador de vídeo (câmera + microfone, direto no navegador) --------
+const RECORD_MAX_SECONDS = 30;
+let mediaStream = null;
+let mediaRecorder = null;
+let recordedChunks = [];
+let recordedBlob = null;
+let recordTimer = null;
+let recordSecondsElapsed = 0;
+
+const recorderOverlay = document.getElementById('recorderOverlay');
+const recorderPreview = document.getElementById('recorderPreview');
+const recorderTimerEl = document.getElementById('recorderTimer');
+const recorderErrorEl = document.getElementById('recorderError');
+
+document.getElementById('btnOpenRecorder').addEventListener('click', async () => {
+  recorderErrorEl.textContent = '';
+  recorderOverlay.classList.add('active');
+  resetRecorderUI();
+  try {
+    mediaStream = await navigator.mediaDevices.getUserMedia({
+      video: { width: 480, height: 360, facingMode: 'user' },
+      audio: true,
+    });
+    recorderPreview.srcObject = mediaStream;
+  } catch (err) {
+    console.error(err);
+    recorderErrorEl.textContent = 'Não consegui acessar sua câmera/microfone. Verifique as permissões do navegador.';
+  }
+});
+
+document.getElementById('btnCloseRecorder').addEventListener('click', closeRecorder);
+
+function closeRecorder(){
+  stopTimer();
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+  if (mediaStream) { mediaStream.getTracks().forEach(t => t.stop()); mediaStream = null; }
+  recorderOverlay.classList.remove('active');
+  resetRecorderUI();
+}
+function resetRecorderUI(){
+  recordedChunks = [];
+  recordedBlob = null;
+  recordSecondsElapsed = 0;
+  recorderTimerEl.textContent = `00:00 / 00:${String(RECORD_MAX_SECONDS).padStart(2,'0')}`;
+  document.getElementById('recorderControls').style.display = 'flex';
+  document.getElementById('recorderControls').innerHTML = '<button class="btn btn-primary" id="btnStartRecording">🔴 Iniciar gravação</button>';
+  document.getElementById('btnStartRecording').addEventListener('click', startRecording);
+  document.getElementById('recorderReviewControls').style.display = 'none';
+  recorderPreview.muted = true;
+  recorderPreview.controls = false;
+  if (mediaStream) recorderPreview.srcObject = mediaStream;
+}
+
+function startRecording(){
+  if (!mediaStream) return;
+  recordedChunks = [];
+  const options = MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus')
+    ? { mimeType: 'video/webm;codecs=vp8,opus', videoBitsPerSecond: 500000 }
+    : { videoBitsPerSecond: 500000 };
+  try {
+    mediaRecorder = new MediaRecorder(mediaStream, options);
+  } catch (err) {
+    recorderErrorEl.textContent = 'Seu navegador não suporta gravação de vídeo.';
+    return;
+  }
+  mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) recordedChunks.push(e.data); };
+  mediaRecorder.onstop = onRecordingStopped;
+  mediaRecorder.start();
+
+  document.getElementById('recorderControls').innerHTML = '<button class="btn btn-fb" id="btnStopRecording">⏹️ Parar gravação</button>';
+  document.getElementById('btnStopRecording').addEventListener('click', stopRecording);
+
+  recordSecondsElapsed = 0;
+  updateTimerLabel();
+  recordTimer = setInterval(() => {
+    recordSecondsElapsed++;
+    updateTimerLabel();
+    if (recordSecondsElapsed >= RECORD_MAX_SECONDS) stopRecording();
+  }, 1000);
+}
+function updateTimerLabel(){
+  recorderTimerEl.textContent = `00:${String(recordSecondsElapsed).padStart(2,'0')} / 00:${String(RECORD_MAX_SECONDS).padStart(2,'0')}`;
+}
+function stopTimer(){
+  if (recordTimer) { clearInterval(recordTimer); recordTimer = null; }
+}
+function stopRecording(){
+  stopTimer();
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+}
+function onRecordingStopped(){
+  recordedBlob = new Blob(recordedChunks, { type: 'video/webm' });
+  const url = URL.createObjectURL(recordedBlob);
+  recorderPreview.srcObject = null;
+  recorderPreview.src = url;
+  recorderPreview.muted = false;
+  recorderPreview.controls = true;
+  recorderPreview.play().catch(() => {});
+  document.getElementById('recorderControls').style.display = 'none';
+  document.getElementById('recorderReviewControls').style.display = 'flex';
+}
+document.getElementById('btnDiscardRecording').addEventListener('click', () => {
+  URL.revokeObjectURL(recorderPreview.src);
+  recorderPreview.src = '';
+  resetRecorderUI();
+});
+document.getElementById('btnPublishRecording').addEventListener('click', async () => {
+  if (!recordedBlob) return;
+  const btn = document.getElementById('btnPublishRecording');
+  btn.disabled = true;
+  btn.textContent = 'Publicando…';
+  try {
+    const dataUrl = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(recordedBlob);
+    });
+    socket.emit('create_post', { text: '', image: null, videoUrl: dataUrl });
+    closeRecorder();
+  } catch (err) {
+    console.error(err);
+    recorderErrorEl.textContent = 'Não consegui publicar o vídeo, tenta de novo.';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Publicar vídeo';
+  }
+});
+
 // ==================== MARKETPLACE ====================
 let pendingListingImage = null;
 let allListings = [];
@@ -1701,6 +1909,59 @@ function renderMarket(){
         <div class="m-price">${escapeHtml(l.price || 'Combinar')}</div>
         <div class="m-title">${escapeHtml(l.title)}</div>
         <div class="m-seller">${escapeHtml(l.sellerName)}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ==================== BUSINESS ====================
+let pendingBizImage = null;
+let allBizPosts = [];
+
+wirePhotoPicker('btnTakeBizPhoto', 'bizImageCameraInput', 'btnChooseBizPhoto', 'bizImageGalleryInput', async (file) => {
+  pendingBizImage = await resizeImage(file);
+  document.getElementById('bizImgPreview').innerHTML = `
+    <div class="img-preview"><img src="${pendingBizImage}" /></div>`;
+});
+document.getElementById('btnPublishBiz').addEventListener('click', () => {
+  const businessName = document.getElementById('bizName').value.trim();
+  const category = document.getElementById('bizCategory').value.trim();
+  const description = document.getElementById('bizDesc').value.trim();
+  const contact = document.getElementById('bizContact').value.trim();
+  if (!businessName) return;
+  socket.emit('create_biz_post', { businessName, category, description, contact, image: pendingBizImage });
+  document.getElementById('bizName').value = '';
+  document.getElementById('bizCategory').value = '';
+  document.getElementById('bizDesc').value = '';
+  document.getElementById('bizContact').value = '';
+  pendingBizImage = null;
+  document.getElementById('bizImgPreview').innerHTML = '';
+});
+socket.on('biz_post_list', (list) => {
+  allBizPosts = list;
+  renderBizList();
+});
+socket.on('new_biz_post', (post) => {
+  allBizPosts.unshift(post);
+  renderBizList();
+});
+function renderBizList(){
+  const el = document.getElementById('bizList');
+  if (allBizPosts.length === 0){
+    el.innerHTML = '<div class="empty-grid">Ninguém divulgou nada ainda. Seja o primeiro! 💼</div>';
+    return;
+  }
+  el.innerHTML = allBizPosts.map(b => `
+    <div class="biz-card">
+      ${b.image ? `<img src="${b.image}" />` : ''}
+      <div class="b-body">
+        <div class="b-name">${escapeHtml(b.businessName)}</div>
+        ${b.category ? `<span class="b-category">${escapeHtml(b.category)}</span>` : ''}
+        ${b.description ? `<div class="b-desc">${escapeHtml(b.description)}</div>` : ''}
+        <div class="b-footer">
+          <span class="b-author">por ${escapeHtml(b.authorName)}</span>
+          ${b.contact ? `<span class="b-contact">📞 ${escapeHtml(b.contact)}</span>` : ''}
+        </div>
       </div>
     </div>
   `).join('');
