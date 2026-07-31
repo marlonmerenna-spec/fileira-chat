@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Social Station · sem conexão</title>
+<style>
+  body{
+    margin:0; height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:14px; background:#0A0C1B; color:#F2F3FA; font-family: -apple-system, sans-serif; text-align:center; padding:24px;
+  }
+  .icon{ width:64px; height:64px; border-radius:18px; background: linear-gradient(135deg,#3E7BFA,#9B4CE0); }
+  h1{ font-size:20px; margin:0; }
+  p{ color:#8A90B3; font-size:14px; max-width:280px; margin:0; }
+  button{
+    margin-top:10px; padding:12px 22px; border-radius:100px; border:none; cursor:pointer;
+    background: linear-gradient(135deg,#3E7BFA,#9B4CE0); color:#fff; font-weight:700; font-size:14px;
+  }
+</style>
+</head>
+<body>
+  <div class="icon"></div>
+  <h1>Você está sem internet</h1>
+  <p>O Social Station precisa de conexão pra funcionar (é tudo em tempo real). Assim que a internet voltar, é só reabrir.</p>
+  <button onclick="location.reload()">Tentar de novo</button>
+</body>
+</html>

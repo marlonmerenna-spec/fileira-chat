@@ -4,6 +4,17 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
 <title>Social Station · salas de bate-papo com avatar 3D</title>
+
+<!-- PWA: deixa o site instalável como app -->
+<link rel="manifest" href="/manifest.json" />
+<meta name="theme-color" content="#0A0C1B" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Social Station" />
+<link rel="icon" href="/icons/icon-192.png" />
+<link rel="apple-touch-icon" href="/icons/icon-180.png" />
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/@google/model-viewer@3.5.0/dist/model-viewer.min.js" type="module"></script>
@@ -2044,6 +2055,15 @@ document.getElementById('btnDmSend').addEventListener('click', sendDm);
 document.getElementById('dmInput').addEventListener('keydown', (e) => {
   if (e.key === 'Enter') sendDm();
 });
+
+// -------- PWA: registra o service worker --------
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch((err) => {
+      console.log('Service worker não registrado:', err.message);
+    });
+  });
+}
 </script>
 </body>
 </html>
