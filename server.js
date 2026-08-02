@@ -160,6 +160,7 @@ function broadcastOnlineUsers() {
   const list = Array.from(onlineUsers.entries()).map(([id, u]) => ({
     id, name: u.name, avatarUrl: u.avatarUrl, avatarType: u.avatarType, avatarConfig: u.avatarConfig,
     photoUrl: u.photoUrl, city: u.city, work: u.work, theme: u.theme, profileSongUrl: u.profileSongUrl, status: u.status,
+    relationship: u.relationship, birthday: u.birthday, bio: u.bio, hometown: u.hometown, website: u.website, hobbies: u.hobbies,
   }));
   io.emit('online_users', list);
 }
@@ -232,7 +233,8 @@ io.on('connection', (socket) => {
     socket.emit('auth_success', { isNewUser: !account.profile, profile: account.profile });
   });
 
-  socket.on('set_profile', ({ name, avatarUrl, avatarType, avatarConfig, photoUrl, city, work, theme, profileSongUrl }) => {
+  socket.on('set_profile', ({ name, avatarUrl, avatarType, avatarConfig, photoUrl, city, work, theme, profileSongUrl, relationship, birthday, bio, hometown, website, hobbies }) => {
+    const previousStatus = socket.data.profile ? socket.data.profile.status : null;
     socket.data.profile = {
       name: (name || 'Visitante').slice(0, 24),
       avatarUrl: avatarUrl || null,
@@ -243,7 +245,13 @@ io.on('connection', (socket) => {
       work: (work || '').slice(0, 60),
       theme: (theme || 'nebulosa').slice(0, 20),
       profileSongUrl: (profileSongUrl || '').trim().slice(0, 500),
-      status: 'disponivel',
+      relationship: (relationship || '').slice(0, 40),
+      birthday: (birthday || '').slice(0, 20),
+      bio: (bio || '').slice(0, 300),
+      hometown: (hometown || '').slice(0, 60),
+      website: (website || '').trim().slice(0, 200),
+      hobbies: (hobbies || '').slice(0, 200),
+      status: previousStatus || 'disponivel', // não reseta o humor toda vez que o perfil é salvo
     };
     onlineUsers.set(socket.id, socket.data.profile);
     if (socket.data.username && accounts.has(socket.data.username)) {
