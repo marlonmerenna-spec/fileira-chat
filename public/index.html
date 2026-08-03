@@ -96,7 +96,15 @@
     border: 1px solid var(--border); background: var(--panel); color: var(--text);
     font-family: var(--font-body); font-size:15px;
   }
-  input[type=text]::placeholder{ color: var(--text-muted); }
+  input[type=text]::placeholder, input[type=date]::placeholder{ color: var(--text-muted); }
+  #screen-settings input[type=text], #screen-settings input[type=date], #screen-settings select, #screen-settings textarea{
+    width:100%; max-width: 320px; padding: 14px 16px; border-radius: 14px;
+    border: 1px solid var(--border); background: var(--panel); color: var(--text);
+    font-family: var(--font-body); font-size:15px; margin-bottom:10px; display:block;
+  }
+  #screen-settings textarea{ min-height:80px; resize:vertical; }
+  .settings-field-grid{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; max-width:320px; }
+  .settings-field-grid select, .settings-field-grid input{ max-width:none; margin-bottom:0; }
   .btn{
     font-family: var(--font-display); font-weight:600; font-size:15px;
     padding: 13px 22px; border-radius: 14px; border:none; cursor:pointer;
@@ -138,7 +146,10 @@
   .my-profile-card{
     background: var(--panel); border:1px solid var(--border); border-radius: var(--radius);
     padding: 16px; display:flex; align-items:center; gap:14px; margin-bottom: 14px;
+    transition: border-color .15s ease;
   }
+  .my-profile-card:hover{ border-color: var(--accent); }
+  .my-profile-card .mp-view-link{ font-size:12px; color: var(--accent); font-weight:700; flex:0 0 auto; white-space:nowrap; }
   .my-profile-card .mp-photo{
     width:64px; height:64px; border-radius:50%; overflow:hidden; flex:0 0 auto;
     background: var(--bg); border:2px solid var(--border);
@@ -253,25 +264,48 @@
   .dm-header{ display:flex; align-items:center; gap:10px; padding: 12px 16px; border-bottom:1px solid var(--border); background: var(--bg-soft); }
   .dm-header h3{ font-size:15px; }
 
-  /* ---------- Tela de perfil ---------- */
-  .profile-view-card{ display:flex; flex-direction:column; align-items:center; gap:12px; padding: 30px 0; }
-  .profile-big-avatar{ width:150px; height:150px; border-radius:50%; overflow:hidden; background: var(--panel); border:2px solid var(--border); position:relative; }
-  .profile-big-avatar model-viewer{ width:100%; height:100%; }
-  .profile-big-avatar .fallback{ width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:40px; font-family: var(--font-display); background: var(--accent-gradient); color:#fff; }
-  .profile-big-avatar .mood-badge{ width:34px; height:34px; font-size:20px; bottom:4px; right:4px; }
-  .profile-status-pill{ font-size:13px; color: var(--text-muted); background: var(--panel); border:1px solid var(--border); border-radius:100px; padding:6px 14px; }
-  .profile-info-list{ display:flex; flex-direction:column; gap:8px; margin-top: 16px; width:100%; max-width:320px; }
-  .profile-info-row{ display:flex; align-items:center; gap:10px; background: var(--panel); border:1px solid var(--border); border-radius:12px; padding:10px 14px; font-size:13.5px; }
+  /* ---------- Tela de perfil (estilo Orkut clássico, cores fixas) ---------- */
+  .orkut-page{ background:#E4EBF5 !important; }
+  .orkut-wrap{ display:flex; flex-direction:column; gap:20px; padding:16px; max-width:720px; margin:0 auto; }
+  @media (min-width:640px){ .orkut-wrap{ flex-direction:row; align-items:flex-start; } }
 
-  .follow-stats{ display:flex; gap:24px; margin-top:10px; }
-  .follow-stat{ background:transparent; border:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; color: var(--text); }
-  .follow-stat strong{ font-size:17px; font-family: var(--font-display); }
-  .follow-stat span{ font-size:11px; color: var(--text-muted); }
-  .profile-song-bar{
-    display:flex; align-items:center; justify-content:space-between; gap:10px; width:100%; max-width:320px;
-    background: var(--accent-soft); border:1px solid var(--accent); border-radius:100px; padding:6px 8px 6px 14px;
-    font-size:12px; color: var(--text); margin-top:14px;
+  .orkut-left{ display:flex; flex-direction:column; align-items:center; gap:8px; flex:0 0 auto; width:100%; }
+  @media (min-width:640px){ .orkut-left{ width:180px; } }
+  .orkut-photo{
+    width:150px; height:150px; border-radius:8px; overflow:hidden; background:#fff;
+    border:1px solid #A8BEDB; box-shadow:0 1px 3px rgba(0,0,0,0.15); position:relative;
   }
+  .orkut-photo model-viewer{ width:100%; height:100%; }
+  .orkut-photo .fallback{ width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:40px; font-family:'Nunito',sans-serif; background: linear-gradient(135deg,#4A76A8,#34568F); color:#fff; }
+  .orkut-photo .mood-badge{ width:30px; height:30px; font-size:16px; bottom:2px; right:2px; }
+  .orkut-name-small{ font-size:15px; font-weight:700; color:#2A4A7A; text-align:center; }
+  .orkut-subline{ font-size:12px; color:#6B7C93; text-align:center; }
+  .orkut-add-btn{ background:#34568F !important; border-color:#34568F !important; color:#fff !important; font-size:13px; padding:8px 16px; margin-top:4px; }
+  .profile-song-bar{
+    display:flex; align-items:center; justify-content:space-between; gap:8px; width:100%; max-width:180px;
+    background:#FFF3C4; border:1px solid #E0C24A; border-radius:8px; padding:6px 8px 6px 12px;
+    font-size:11.5px; color:#5A4A1A; margin-top:8px;
+  }
+  .profile-song-bar .icon-btn{ width:26px; height:26px; font-size:12px; background:#fff; border-color:#E0C24A; }
+
+  .orkut-right{ flex:1; min-width:0; width:100%; }
+  .orkut-title{ font-size:24px; color:#2A4A7A; font-family:'Nunito',sans-serif; font-weight:800; margin-bottom:8px; }
+  .orkut-stats-bar{ display:flex; gap:20px; margin-bottom:14px; }
+  .orkut-stat{ background:transparent; border:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; color:#2A4A7A; }
+  .orkut-stat strong{ font-size:16px; font-family:'Nunito',sans-serif; }
+  .orkut-stat span{ font-size:10.5px; color:#6B7C93; }
+  .orkut-tab-header{
+    display:inline-block; background: linear-gradient(180deg,#5A83B8,#3D6094); color:#fff; font-size:12px;
+    font-weight:700; padding:6px 16px; border-radius:6px 6px 0 0; letter-spacing:0.3px;
+  }
+  .orkut-table{ width:100%; border-collapse:collapse; background:#fff; border:1px solid #C9D6E7; border-radius:0 6px 6px 6px; overflow:hidden; }
+  .orkut-table tr:nth-child(even){ background:#EEF3FB; }
+  .orkut-table td{ padding:9px 14px; font-size:13px; vertical-align:top; }
+  .orkut-table td.orkut-label{ color:#6B7C93; white-space:nowrap; width:1%; font-weight:600; }
+  .orkut-table td.orkut-value{ color:#223047; }
+  .orkut-table td.orkut-value a{ color:#34568F; }
+  .orkut-empty{ padding:16px; color:#8A93A8; font-size:13px; text-align:center; }
+
   .profile-info-row img{ width:32px; height:32px; border-radius:50%; object-fit:cover; }
 
   /* ---------- Criador de avatar 2D ---------- */
@@ -819,29 +853,31 @@
   </section>
 
   <!-- TELA: Perfil de um usuário -->
-  <section id="screen-profile-view" class="screen">
+  <section id="screen-profile-view" class="screen orkut-page">
     <div class="room-header">
       <div><h2>Perfil</h2></div>
       <button class="btn btn-ghost" id="btnBackFromProfile">← Voltar</button>
     </div>
-    <div class="wrap">
-      <div class="profile-view-card">
-        <div class="profile-big-avatar" id="profileBigAvatar"></div>
-        <h2 id="profileName"></h2>
-        <span class="profile-status-pill" id="profileStatusPill"></span>
-
-        <div class="follow-stats" id="followStats">
-          <button class="follow-stat" id="btnShowFollowers"><strong id="followersCount">0</strong><span>Seguidores</span></button>
-          <button class="follow-stat" id="btnShowFollowing"><strong id="followingCount">0</strong><span>Seguindo</span></button>
-        </div>
-        <button class="btn btn-primary" id="btnFollowToggle" style="display:none;">Seguir</button>
-
+    <div class="orkut-wrap">
+      <div class="orkut-left">
+        <div class="profile-big-avatar orkut-photo" id="profileBigAvatar"></div>
+        <div class="orkut-name-small" id="profileNameSmall"></div>
+        <div class="orkut-subline" id="profileSubline"></div>
+        <button class="btn btn-primary orkut-add-btn" id="btnFollowToggle" style="display:none;">+ seguir</button>
         <div id="profileSongBar" class="profile-song-bar" style="display:none;">
-          <span>🎵 Tocando o perfil de <span id="songOwnerName"></span></span>
+          <span>🎵 <span id="songOwnerName"></span></span>
           <button class="icon-btn" id="btnToggleSong">⏸️</button>
         </div>
+      </div>
 
-        <div class="profile-info-list" id="profileInfoList"></div>
+      <div class="orkut-right">
+        <h2 class="orkut-title" id="profileName"></h2>
+        <div class="orkut-stats-bar">
+          <button class="orkut-stat" id="btnShowFollowers"><strong id="followersCount">0</strong><span>seguidores</span></button>
+          <button class="orkut-stat" id="btnShowFollowing"><strong id="followingCount">0</strong><span>seguindo</span></button>
+        </div>
+        <div class="orkut-tab-header">social</div>
+        <table class="orkut-table"><tbody id="profileInfoList"></tbody></table>
       </div>
     </div>
   </section>
@@ -871,6 +907,24 @@
       <div class="section-title"><h2>🎵 Música do perfil</h2><span></span></div>
       <p class="settings-hint">Cole o link de um arquivo de áudio (.mp3, .ogg) que você tem os direitos de usar. Ele toca automaticamente quando alguém abrir seu perfil.</p>
       <input type="text" id="songUrlInput" placeholder="https://exemplo.com/minha-musica.mp3" />
+
+      <div class="section-title"><h2>📋 Sobre você</h2><span>aparece no seu perfil</span></div>
+      <div class="settings-field-grid">
+        <select id="relationshipInput">
+          <option value="">Relacionamento (opcional)</option>
+          <option value="Solteiro(a)">Solteiro(a)</option>
+          <option value="Namorando">Namorando</option>
+          <option value="Casado(a)">Casado(a)</option>
+          <option value="Complicado">É complicado</option>
+          <option value="Prefiro não dizer">Prefiro não dizer</option>
+        </select>
+        <input type="date" id="birthdayInput" placeholder="Aniversário" />
+      </div>
+      <input type="text" id="hometownInput" placeholder="Cidade natal" maxlength="60" />
+      <input type="text" id="websiteInput" placeholder="Site ou link (opcional)" maxlength="200" />
+      <input type="text" id="hobbiesInput" placeholder="Paixões / interesses (ex: música, games, viagem)" maxlength="200" />
+      <textarea id="bioInput" placeholder="Quem sou eu…" maxlength="300"></textarea>
+
       <button class="btn btn-primary" id="btnSaveSettings" style="margin-top:14px;">Salvar configurações</button>
       <div id="settingsSavedMsg" style="color: var(--mint); font-size:13px; margin-top:8px;"></div>
     </div>
@@ -1210,7 +1264,10 @@ function renderMyProfileCard(){
       <div class="mp-name">${escapeHtml(myProfile.name || 'Visitante')}</div>
       ${lines.join('') || '<div class="mp-empty">Adicione cidade e trabalho no seu perfil</div>'}
     </div>
+    <span class="mp-view-link">Ver perfil →</span>
   `;
+  box.style.cursor = 'pointer';
+  box.onclick = () => openProfile(socket.id, myProfile.name, myProfile.avatarUrl);
 }
 
 // -------- Customizador do avatar 2D --------
@@ -1283,6 +1340,12 @@ document.getElementById('btnOpenSettings').addEventListener('click', () => {
   previousScreenBeforeSettings = Object.keys(screens).find(k => screens[k].classList.contains('active')) || 'feed';
   renderThemeGrid();
   document.getElementById('songUrlInput').value = myProfile.profileSongUrl || '';
+  document.getElementById('relationshipInput').value = myProfile.relationship || '';
+  document.getElementById('birthdayInput').value = myProfile.birthday || '';
+  document.getElementById('hometownInput').value = myProfile.hometown || '';
+  document.getElementById('websiteInput').value = myProfile.website || '';
+  document.getElementById('hobbiesInput').value = myProfile.hobbies || '';
+  document.getElementById('bioInput').value = myProfile.bio || '';
   document.getElementById('settingsSavedMsg').textContent = '';
   showScreen('settings');
 });
@@ -1308,7 +1371,14 @@ function renderThemeGrid(){
 
 document.getElementById('btnSaveSettings').addEventListener('click', () => {
   myProfile.profileSongUrl = document.getElementById('songUrlInput').value.trim();
+  myProfile.relationship = document.getElementById('relationshipInput').value;
+  myProfile.birthday = document.getElementById('birthdayInput').value;
+  myProfile.hometown = document.getElementById('hometownInput').value.trim();
+  myProfile.website = document.getElementById('websiteInput').value.trim();
+  myProfile.hobbies = document.getElementById('hobbiesInput').value.trim();
+  myProfile.bio = document.getElementById('bioInput').value.trim();
   socket.emit('set_profile', myProfile);
+  renderMyProfileCard();
   document.getElementById('settingsSavedMsg').textContent = 'Configurações salvas! ✅';
 });
 
@@ -1503,15 +1573,26 @@ function openProfile(id, fallbackName, fallbackAvatar) {
   const u = onlineUsersMap[id] || { name: fallbackName, avatarUrl: fallbackAvatar, avatarType: fallbackAvatar ? '3d' : null, avatarConfig: null, status: null, photoUrl: null, city: '', work: '', profileSongUrl: '' };
   currentProfileViewId = id;
   document.getElementById('profileName').textContent = u.name || 'Visitante';
-  document.getElementById('profileStatusPill').textContent = u.status ? `${moodEmoji(u.status)} ${moodLabel(u.status)}` : 'Status indisponível';
+  document.getElementById('profileNameSmall').textContent = u.name || 'Visitante';
+  document.getElementById('profileSubline').textContent = [u.city, u.work].filter(Boolean).join(' · ') || '\u00A0';
+
   const box = document.getElementById('profileBigAvatar');
   box.innerHTML = avatarMediaHtml(u) + badgeHtml(u.status);
 
-  const infoRows = [];
-  if (u.photoUrl) infoRows.push(`<div class="profile-info-row"><img src="${u.photoUrl}" /> Foto de perfil</div>`);
-  if (u.city) infoRows.push(`<div class="profile-info-row">📍 ${escapeHtml(u.city)}</div>`);
-  if (u.work) infoRows.push(`<div class="profile-info-row">💼 ${escapeHtml(u.work)}</div>`);
-  document.getElementById('profileInfoList').innerHTML = infoRows.join('');
+  const rows = [];
+  if (u.status) rows.push(['humor', `${moodEmoji(u.status)} ${moodLabel(u.status)}`]);
+  if (u.relationship) rows.push(['relacionamento', escapeHtml(u.relationship)]);
+  if (u.birthday) rows.push(['aniversário', formatBirthday(u.birthday)]);
+  if (u.city) rows.push(['moro em', escapeHtml(u.city)]);
+  if (u.hometown) rows.push(['cidade natal', escapeHtml(u.hometown)]);
+  if (u.work) rows.push(['trabalho', escapeHtml(u.work)]);
+  if (u.hobbies) rows.push(['paixões', escapeHtml(u.hobbies)]);
+  if (u.website) rows.push(['site', `<a href="${escapeHtml(safeUrl(u.website))}" target="_blank" rel="noopener noreferrer">${escapeHtml(u.website)}</a>`]);
+  if (u.bio) rows.push(['quem sou eu', escapeHtml(u.bio)]);
+
+  document.getElementById('profileInfoList').innerHTML = rows.length
+    ? rows.map(([label, value]) => `<tr><td class="orkut-label">${label}:</td><td class="orkut-value">${value}</td></tr>`).join('')
+    : `<tr><td class="orkut-empty" colspan="2">Essa pessoa ainda não preencheu o perfil.</td></tr>`;
 
   // seguidores/seguindo
   const isOwnProfile = id === socket.id;
@@ -1753,6 +1834,20 @@ function scrollToBottom(){
 }
 function initials(name){
   return (name || '?').split(' ').map(p => p[0]).join('').slice(0,2).toUpperCase();
+}
+function formatBirthday(dateStr){
+  // dateStr vem do <input type="date">, formato YYYY-MM-DD
+  const parts = (dateStr || '').split('-');
+  if (parts.length !== 3) return escapeHtml(dateStr || '');
+  const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+  if (isNaN(d.getTime())) return escapeHtml(dateStr);
+  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' });
+}
+function safeUrl(url){
+  const u = (url || '').trim();
+  if (!u) return '#';
+  if (/^https?:\/\//i.test(u)) return u;
+  return 'https://' + u;
 }
 function escapeHtml(str){
   const div = document.createElement('div');
