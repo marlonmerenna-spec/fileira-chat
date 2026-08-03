@@ -7,7 +7,7 @@
 
 <!-- PWA: deixa o site instalável como app -->
 <link rel="manifest" href="/manifest.json" />
-<meta name="theme-color" content="#0A0C1B" />
+<meta name="theme-color" content="#000000" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -16,26 +16,26 @@
 <link rel="apple-touch-icon" href="/icons/icon-180.png" />
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/@google/model-viewer@3.5.0/dist/model-viewer.min.js" type="module"></script>
 <script src="/socket.io/socket.io.js"></script>
 <style>
   :root{
-    --bg: #0A0C1B;
-    --bg-soft: #12162B;
-    --panel: #161B33;
-    --panel-hover: #1E2440;
-    --border: #2A3155;
-    --text: #F2F3FA;
-    --text-muted: #8A90B3;
-    --accent: #7B5CF0;
-    --accent-2: #3E7BFA;
-    --accent-gradient: linear-gradient(135deg, #3E7BFA, #9B4CE0);
-    --accent-soft: rgba(123, 92, 240, 0.18);
+    --bg: #000000;
+    --bg-soft: #0D0D0F;
+    --panel: #141416;
+    --panel-hover: #1D1D20;
+    --border: #2A2A2E;
+    --text: #F5F6F8;
+    --text-muted: #8C8F98;
+    --accent: #35C5F0;
+    --accent-2: #1E9FD6;
+    --accent-gradient: linear-gradient(135deg, #35C5F0, #1E9FD6);
+    --accent-soft: rgba(53, 197, 240, 0.16);
     --mint: #3ECF8E;
     --radius: 14px;
-    --font-display: 'Nunito', sans-serif;
-    --font-body: 'Nunito', sans-serif;
+    --font-display: 'Poppins', sans-serif;
+    --font-body: 'Poppins', sans-serif;
   }
   /* Tema: Orkut Clássico — claro, azul/branco */
   html[data-theme="orkut"]{
@@ -85,7 +85,7 @@
     background: var(--bg-soft);
   }
   .brand{ display:flex; align-items:center; gap:10px; }
-  .brand-dot{ width:14px; height:14px; border-radius:5px; background: var(--accent-gradient); box-shadow: 0 0 10px rgba(123,92,240,0.6); }
+  .brand-dot{ width:14px; height:14px; border-radius:5px; background: var(--accent-gradient); box-shadow: 0 0 10px rgba(53,197,240,0.7); }
   .brand h1{ font-size: 20px; letter-spacing: 0.3px; }
 
   /* ---------- Perfil / avatar ---------- */
@@ -360,19 +360,20 @@
     gap: 28px; padding: 30px 20px; max-width: 420px; margin: 0 auto; text-align:center;
   }
   .landing-hero{ display:flex; flex-direction:column; align-items:center; gap:8px; }
-  .landing-logo{ width:76px; height:76px; filter: drop-shadow(0 10px 24px rgba(123,92,240,0.45)); margin-bottom:6px; }
-  .landing-logo svg{ width:100%; height:100%; }
-  .landing-hero h1{ font-size: 34px; font-weight:800; letter-spacing:-0.5px; }
-  .landing-hero h1 .w-white{ color: var(--text); }
-  .landing-hero h1 .w-grad{
-    background: var(--accent-gradient); -webkit-background-clip:text; background-clip:text; color:transparent;
+  .landing-logo{
+    width:120px; height:60px; margin-bottom:10px;
+    filter: drop-shadow(0 0 10px rgba(53,197,240,0.9)) drop-shadow(0 0 24px rgba(53,197,240,0.5));
   }
+  .landing-logo svg{ width:100%; height:100%; }
+  .landing-hero h1{ font-size: 32px; font-weight:800; letter-spacing:-0.5px; }
+  .landing-hero h1 .w-white{ color: var(--text); }
   .landing-tagline{ color: var(--text-muted); font-size:11.5px; letter-spacing:2.5px; font-weight:700; margin:2px 0 0; }
+  .landing-tagline-accent{ color: var(--accent); font-size:15px; letter-spacing:0.3px; font-weight:600; text-transform:none; }
   .landing-sub{ color: var(--text-muted); font-size:14px; max-width:320px; margin-top:6px; }
 
   .pillars-row{ display:flex; justify-content:space-between; gap:6px; width:100%; }
   .pillar{ display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; text-align:center; }
-  .pillar .p-icon{ font-size:20px; }
+  .pillar .p-icon{ font-size:20px; filter: drop-shadow(0 0 6px rgba(53,197,240,0.6)); }
   .pillar .p-label{ font-size:11px; font-weight:700; color: var(--text); line-height:1.4; }
   .pillar .p-label small{ font-weight:400; color: var(--text-muted); font-size:10px; }
 
@@ -576,30 +577,21 @@
     <div class="landing-wrap">
       <div class="landing-hero">
         <div class="landing-logo">
-          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#3E7BFA"/>
-                <stop offset="100%" stop-color="#9B4CE0"/>
-              </linearGradient>
-            </defs>
-            <rect x="4" y="4" width="92" height="92" rx="24" fill="url(#logoGrad)"/>
-            <path d="M66 30 Q40 30 40 46 Q40 60 60 60 Q80 60 80 74 Q80 90 54 90"
-                  fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round"/>
-            <circle cx="66" cy="30" r="7" fill="#fff"/>
-            <circle cx="54" cy="90" r="7" fill="#fff"/>
+          <svg viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="65" cy="50" rx="40" ry="32" fill="none" stroke="#fff" stroke-width="15"/>
+            <ellipse cx="135" cy="50" rx="40" ry="32" fill="none" stroke="#fff" stroke-width="15"/>
           </svg>
         </div>
-        <h1><span class="w-white">Social</span> <span class="w-grad">Station</span></h1>
-        <p class="landing-tagline">CONNECT · SHARE · EXPLORE · BELONG</p>
+        <h1><span class="w-white">Social Station</span></h1>
+        <p class="landing-tagline landing-tagline-accent">Connect Everything.</p>
         <p class="landing-sub">O lugar onde você cria seu avatar, entra em salas, faz amigos e monta a sua estação social.</p>
       </div>
 
       <div class="pillars-row">
-        <div class="pillar"><span class="p-icon">👥</span><span class="p-label">Connect<br><small>com pessoas</small></span></div>
-        <div class="pillar"><span class="p-icon">💬</span><span class="p-label">Share<br><small>suas ideias</small></span></div>
-        <div class="pillar"><span class="p-icon">🌐</span><span class="p-label">Explore<br><small>novas conexões</small></span></div>
-        <div class="pillar"><span class="p-icon">💜</span><span class="p-label">Belong<br><small>faça parte</small></span></div>
+        <div class="pillar"><span class="p-icon">♾️</span><span class="p-label">Conexões<br><small>infinitas</small></span></div>
+        <div class="pillar"><span class="p-icon">🛡️</span><span class="p-label">Seguro<br><small>e confiável</small></span></div>
+        <div class="pillar"><span class="p-icon">⚡</span><span class="p-label">Rápido<br><small>e inteligente</small></span></div>
+        <div class="pillar"><span class="p-icon">🌐</span><span class="p-label">Para<br><small>todos</small></span></div>
       </div>
 
       <div class="auth-card">
@@ -1323,7 +1315,7 @@ function renderAvatar2DSwatches(){
 
 // -------- Temas e Configurações --------
 const THEMES = [
-  { id: 'nebulosa',  name: 'Nebulosa (padrão)', colors: ['#0A0C1B', '#3E7BFA', '#9B4CE0'] },
+  { id: 'nebulosa',  name: 'Social Station (padrão)', colors: ['#000000', '#35C5F0', '#1E9FD6'] },
   { id: 'orkut',     name: 'Orkut Clássico',     colors: ['#E4EBF5', '#34568F', '#4A76A8'] },
   { id: 'meianoite', name: 'Meia-noite',         colors: ['#000000', '#22C55E', '#0EA5A0'] },
   { id: 'sunset',    name: 'Sunset',             colors: ['#17101C', '#FF7A59', '#E0457B'] },
