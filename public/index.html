@@ -143,6 +143,35 @@
 
   /* ---------- Feed ---------- */
   /* ---------- Feed ---------- */
+  /* ---------- Stories ---------- */
+  .stories-row{ display:flex; gap:12px; overflow-x:auto; padding: 4px 2px 14px; }
+  .story-circle{ flex:0 0 auto; display:flex; flex-direction:column; align-items:center; gap:5px; width:64px; cursor:pointer; }
+  .story-ring{
+    width:60px; height:60px; border-radius:50%; padding:2.5px;
+    background: var(--accent-gradient); display:flex; align-items:center; justify-content:center;
+  }
+  .story-ring.seen{ background: var(--border); }
+  .story-avatar-inner{ width:100%; height:100%; border-radius:50%; overflow:hidden; background: var(--bg); border:2px solid var(--bg); }
+  .story-avatar-inner .fallback{ width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:16px; font-family: var(--font-display); background: var(--accent-gradient); color:#fff; }
+  .story-add-btn{ width:60px; height:60px; border-radius:50%; background: var(--panel); border:1.5px dashed var(--border); display:flex; align-items:center; justify-content:center; font-size:22px; color: var(--accent); }
+  .story-circle .story-label{ font-size:10.5px; color: var(--text-muted); max-width:64px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+  .story-viewer{
+    position:fixed; inset:0; background:#000; z-index:80; display:none; flex-direction:column;
+  }
+  .story-viewer.active{ display:flex; }
+  .story-progress-bar{ height:3px; background:rgba(255,255,255,0.25); margin:10px 12px 0; border-radius:100px; overflow:hidden; }
+  .story-progress-fill{ height:100%; width:0%; background:#fff; }
+  .story-viewer-head{ display:flex; align-items:center; gap:10px; padding:12px; }
+  .story-viewer-avatar{ width:32px; height:32px; border-radius:50%; overflow:hidden; background: var(--panel); flex:0 0 auto; }
+  .story-viewer-avatar .fallback{ width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:12px; background: var(--accent-gradient); color:#fff; }
+  .story-viewer-who{ flex:1; display:flex; flex-direction:column; color:#fff; }
+  .story-viewer-who span{ font-size:13.5px; font-weight:700; }
+  .story-viewer-who small{ font-size:11px; color:rgba(255,255,255,0.6); }
+  #storyViewerImg{ flex:1; width:100%; object-fit:contain; background:#000; }
+  .story-tap-zones{ position:absolute; inset:0; top:60px; display:flex; }
+  .story-tap-zones div{ flex:1; }
+
   .my-profile-card{
     background: var(--panel); border:1px solid var(--border); border-radius: var(--radius);
     padding: 16px; display:flex; align-items:center; gap:14px; margin-bottom: 14px;
@@ -190,6 +219,21 @@
   .post-head .who .t{ font-size:11px; color: var(--text-muted); }
   .post-text{ font-size:14.5px; line-height:1.5; margin: 4px 0 10px; white-space:pre-wrap; word-break:break-word; }
   .post-image{ width:100%; border-radius:14px; margin-bottom:10px; display:block; }
+  .post-media-wrap{ position:relative; margin-bottom:10px; }
+  .post-media-wrap .post-image{ margin-bottom:0; }
+  .floating-actions{
+    position:absolute; right:10px; bottom:14px; display:flex; flex-direction:column; gap:12px; align-items:center;
+  }
+  .fa-btn{
+    display:flex; flex-direction:column; align-items:center; gap:2px; background:transparent; border:none; cursor:pointer;
+  }
+  .fa-icon{
+    width:38px; height:38px; border-radius:50%; background:rgba(0,0,0,0.45); backdrop-filter:blur(4px);
+    display:flex; align-items:center; justify-content:center; font-size:17px; border:1px solid rgba(255,255,255,0.15);
+  }
+  .fa-btn.liked .fa-icon{ background: var(--accent-soft); border-color: var(--accent); }
+  .fa-count{ font-size:10px; color:#fff; font-weight:600; text-shadow:0 1px 3px rgba(0,0,0,0.6); }
+  .fa-btn.share-btn .fa-count{ font-size:9px; }
   .post-actions{ display:flex; gap:8px; flex-wrap:wrap; }
   .like-btn, .comment-btn, .share-btn{
     display:flex; align-items:center; gap:6px; background: var(--bg-soft); border:1px solid var(--border);
@@ -663,6 +707,8 @@
   <!-- TELA 2: Feed -->
   <section id="screen-feed" class="screen">
     <div class="wrap">
+      <div class="stories-row" id="storiesRow"></div>
+      <input type="file" id="storyImageInput" accept="image/*" style="display:none" />
       <div class="my-profile-card" id="myProfileCard"></div>
       <div class="composer-card">
         <textarea id="postText" placeholder="O que você está pensando?" maxlength="500"></textarea>
@@ -935,6 +981,24 @@
       <button class="btn btn-primary" id="btnConfirm2D">Usar este avatar</button>
     </div>
   </section>
+
+  <!-- Overlay de visualização de Stories (tela cheia) -->
+  <div class="story-viewer" id="storyViewer">
+    <div class="story-progress-bar"><div class="story-progress-fill" id="storyProgressFill"></div></div>
+    <div class="story-viewer-head">
+      <div class="story-viewer-avatar" id="storyViewerAvatar"></div>
+      <div class="story-viewer-who">
+        <span id="storyViewerName"></span>
+        <small id="storyViewerTime"></small>
+      </div>
+      <button class="icon-btn" id="btnCloseStory">✕</button>
+    </div>
+    <img id="storyViewerImg" src="" />
+    <div class="story-tap-zones">
+      <div id="storyTapPrev"></div>
+      <div id="storyTapNext"></div>
+    </div>
+  </div>
 
   <!-- Overlay do criador de avatar (Ready Player Me) -->
   <div class="rpm-overlay" id="rpmOverlay">
@@ -1447,6 +1511,7 @@ socket.on('auth_success', ({ isNewUser, profile }) => {
   socket.emit('get_online_users');
   socket.emit('get_listings');
   socket.emit('get_biz_posts');
+  socket.emit('get_stories');
   renderMyProfileCard();
   showScreen('feed');
 });
@@ -1462,6 +1527,7 @@ document.getElementById('btnContinue').addEventListener('click', () => {
   socket.emit('get_online_users');
   socket.emit('get_listings');
   socket.emit('get_biz_posts');
+  socket.emit('get_stories');
   renderMyProfileCard();
   showScreen('feed');
 });
@@ -1847,6 +1913,127 @@ function escapeHtml(str){
   return div.innerHTML;
 }
 
+// ==================== STORIES ====================
+let allStories = [];
+let seenStories = new Set(); // authorIds já vistos nesta sessão
+
+function timeAgo(ts){
+  const diffMin = Math.floor((Date.now() - ts) / 60000);
+  if (diffMin < 1) return 'agora';
+  if (diffMin < 60) return `${diffMin}min`;
+  const diffH = Math.floor(diffMin / 60);
+  if (diffH < 24) return `${diffH}h`;
+  return `${Math.floor(diffH / 24)}d`;
+}
+
+socket.on('story_list', (list) => { allStories = list; renderStoriesRow(); });
+socket.on('new_story', (story) => { allStories.push(story); renderStoriesRow(); });
+
+function renderStoriesRow(){
+  const row = document.getElementById('storiesRow');
+  // agrupa por autor, pegando a mais recente de cada um pra representar o círculo
+  const byAuthor = {};
+  allStories.forEach(s => {
+    if (!byAuthor[s.authorId] || s.ts > byAuthor[s.authorId].ts) byAuthor[s.authorId] = s;
+  });
+  const others = Object.values(byAuthor).filter(s => s.authorId !== socket.id).sort((a,b) => b.ts - a.ts);
+
+  let html = `
+    <div class="story-circle" id="addStoryBtn">
+      <div class="story-add-btn">+</div>
+      <span class="story-label">Seu story</span>
+    </div>
+  `;
+  html += others.map(s => {
+    const live = onlineUsersMap[s.authorId] || s;
+    const seen = seenStories.has(s.authorId);
+    return `
+      <div class="story-circle" data-author="${s.authorId}">
+        <div class="story-ring ${seen ? 'seen' : ''}">
+          <div class="story-avatar-inner">${avatarMediaHtml(live)}</div>
+        </div>
+        <span class="story-label">${escapeHtml(s.authorName)}</span>
+      </div>
+    `;
+  }).join('');
+  row.innerHTML = html;
+
+  document.getElementById('addStoryBtn').addEventListener('click', () => {
+    document.getElementById('storyImageInput').click();
+  });
+  row.querySelectorAll('.story-circle[data-author]').forEach(el => {
+    el.addEventListener('click', () => openStoryViewer(el.dataset.author));
+  });
+}
+
+document.getElementById('storyImageInput').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  try {
+    const dataUrl = await resizeImage(file, 720, 0.75);
+    socket.emit('create_story', { image: dataUrl });
+  } catch (err) {
+    console.error(err);
+    alert('Não consegui processar essa foto, tenta outra.');
+  } finally {
+    e.target.value = '';
+  }
+});
+
+// -------- Visualizador de story em tela cheia --------
+let currentStoryQueue = [];
+let currentStoryIndex = 0;
+let storyProgressTimer = null;
+const STORY_DURATION_MS = 5000;
+
+function openStoryViewer(authorId){
+  currentStoryQueue = allStories.filter(s => s.authorId === authorId).sort((a,b) => a.ts - b.ts);
+  if (currentStoryQueue.length === 0) return;
+  currentStoryIndex = 0;
+  seenStories.add(authorId);
+  renderStoriesRow();
+  document.getElementById('storyViewer').classList.add('active');
+  showCurrentStory();
+}
+function showCurrentStory(){
+  const s = currentStoryQueue[currentStoryIndex];
+  if (!s) { closeStoryViewer(); return; }
+  const live = onlineUsersMap[s.authorId] || s;
+  document.getElementById('storyViewerAvatar').innerHTML = avatarMediaHtml(live);
+  document.getElementById('storyViewerName').textContent = s.authorName;
+  document.getElementById('storyViewerTime').textContent = timeAgo(s.ts);
+  document.getElementById('storyViewerImg').src = s.image;
+  runStoryProgress();
+}
+function runStoryProgress(){
+  clearTimeout(storyProgressTimer);
+  const fill = document.getElementById('storyProgressFill');
+  fill.style.transition = 'none';
+  fill.style.width = '0%';
+  requestAnimationFrame(() => {
+    fill.style.transition = `width ${STORY_DURATION_MS}ms linear`;
+    fill.style.width = '100%';
+  });
+  storyProgressTimer = setTimeout(nextStory, STORY_DURATION_MS);
+}
+function nextStory(){
+  currentStoryIndex++;
+  if (currentStoryIndex >= currentStoryQueue.length) { closeStoryViewer(); return; }
+  showCurrentStory();
+}
+function prevStory(){
+  currentStoryIndex = Math.max(0, currentStoryIndex - 1);
+  showCurrentStory();
+}
+function closeStoryViewer(){
+  clearTimeout(storyProgressTimer);
+  document.getElementById('storyViewer').classList.remove('active');
+  document.getElementById('storyViewerImg').src = '';
+}
+document.getElementById('btnCloseStory').addEventListener('click', closeStoryViewer);
+document.getElementById('storyTapNext').addEventListener('click', nextStory);
+document.getElementById('storyTapPrev').addEventListener('click', prevStory);
+
 // ==================== FEED ====================
 let pendingImage = null; // dataURL já redimensionada, pronta pra publicar
 let allPosts = []; // cache local, mais recentes primeiro
@@ -1991,6 +2178,30 @@ function postCardHtml(p){
   const avatarSrc = live || p; // prefere dados atuais de quem postou; se offline, usa o snapshot salvo no post
   const comments = p.comments || [];
   const isOpen = expandedComments.has(p.id);
+
+  const floatingActions = `
+    <div class="floating-actions">
+      <button class="fa-btn like-btn ${mine ? 'liked' : ''}" data-post="${p.id}">
+        <span class="fa-icon">${mine ? '💖' : '🤍'}</span><span class="fa-count">${p.likeCount}</span>
+      </button>
+      <button class="fa-btn comment-btn" data-post="${p.id}">
+        <span class="fa-icon">💬</span><span class="fa-count">${comments.length}</span>
+      </button>
+      <button class="fa-btn share-btn" data-post="${p.id}">
+        <span class="fa-icon">🔁</span><span class="fa-count">compartilhar</span>
+      </button>
+    </div>
+  `;
+  const pillActions = `
+    <div class="post-actions">
+      <button class="like-btn ${mine ? 'liked' : ''}" data-post="${p.id}">
+        ${mine ? '💖' : '🤍'} <span class="count">${p.likeCount}</span> curtir${p.likeCount === 1 ? '' : 'es'}
+      </button>
+      <button class="comment-btn" data-post="${p.id}">💬 ${comments.length} coment${comments.length === 1 ? 'ário' : 'ários'}</button>
+      <button class="share-btn" data-post="${p.id}">🔁 Compartilhar</button>
+    </div>
+  `;
+
   return `
     <div class="post-card">
       ${p.sharedFrom ? `<div class="shared-tag">🔁 Compartilhado de ${escapeHtml(p.sharedFrom.name)}</div>` : ''}
@@ -2005,15 +2216,9 @@ function postCardHtml(p){
         </div>
       </div>
       ${p.text ? `<div class="post-text">${escapeHtml(p.text)}</div>` : ''}
-      ${p.image ? `<img class="post-image" src="${p.image}" />` : ''}
+      ${p.image ? `<div class="post-media-wrap"><img class="post-image" src="${p.image}" />${floatingActions}</div>` : ''}
       ${p.videoUrl ? `<div class="video-card" style="padding:0;border:none;background:transparent;">${videoEmbedHtml(p.videoUrl)}</div>` : ''}
-      <div class="post-actions">
-        <button class="like-btn ${mine ? 'liked' : ''}" data-post="${p.id}">
-          ${mine ? '💖' : '🤍'} <span class="count">${p.likeCount}</span> curtir${p.likeCount === 1 ? '' : 'es'}
-        </button>
-        <button class="comment-btn" data-post="${p.id}">💬 ${comments.length} coment${comments.length === 1 ? 'ário' : 'ários'}</button>
-        <button class="share-btn" data-post="${p.id}">🔁 Compartilhar</button>
-      </div>
+      ${!p.image ? pillActions : ''}
       <div class="comments-section ${isOpen ? 'active' : ''}" id="comments-${p.id}">
         <div class="comments-list">${comments.map(commentHtml).join('')}</div>
         <div class="comment-composer">

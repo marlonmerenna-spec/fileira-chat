@@ -120,6 +120,21 @@ function normalizeUsername(u) {
   return (u || '').trim().toLowerCase();
 }
 
+// ---- Stories (em memória, somem sozinhas depois de 24h) ----
+const stories = [];
+const STORY_LIFETIME_MS = 24 * 60 * 60 * 1000;
+function serializeStory(s) {
+  return {
+    id: s.id, authorId: s.authorId, authorName: s.authorName,
+    avatarUrl: s.avatarUrl, avatarType: s.avatarType, avatarConfig: s.avatarConfig,
+    image: s.image, ts: s.ts,
+  };
+}
+function activeStories() {
+  const now = Date.now();
+  return stories.filter(s => now - s.ts < STORY_LIFETIME_MS);
+}
+
 // ---- Marketplace (em memória) ----
 const listings = [];
 function serializeListing(l) {
@@ -505,6 +520,26 @@ io.on('connection', (socket) => {
     io.emit('new_biz_post', serializeBizPost(bizPost));
   });
 
+  socket.on('get_stories', () => {
+    socket.emit('story_list', activeStories().map(serializeStory));
+  });
+
+  socket.on('create_story', ({ image }) => {
+    if (!socket.data.profile || !image) return;
+    const story = {
+      id: Date.now() + '_' + socket.id,
+      authorId: socket.id,
+      authorName: socket.data.profile.name,
+      avatarUrl: socket.data.profile.avatarUrl,
+      avatarType: socket.data.profile.avatarType,
+      avatarConfig: socket.data.profile.avatarConfig,
+      image,
+      ts: Date.now(),
+    };
+    stories.push(story);
+    io.emit('new_story', serializeStory(story));
+  });
+
   socket.on('leave_room', () => {
     leaveCurrentRoom(socket);
   });
@@ -535,6 +570,14 @@ io.on('connection', (socket) => {
     io.emit('room_list', publicRoomList());
   }
 });
+
+// limpa stories vencidos da memória a cada hora
+setInterval(() => {
+  const now = Date.now();
+  for (let i = stories.length - 1; i >= 0; i--) {
+    if (now - stories[i].ts >= STORY_LIFETIME_MS) stories.splice(i, 1);
+  }
+}, 60 * 60 * 1000);
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, '0.0.0.0', () => {
