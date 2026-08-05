@@ -492,6 +492,26 @@
   .recorder-error{ color:#FF6B7A; font-size:12.5px; text-align:center; min-height:14px; }
 
   .market-grid{ display:grid; grid-template-columns: repeat(2, 1fr); gap:12px; padding-bottom:24px; }
+
+  /* ---------- Estações ---------- */
+  .station-grid{ display:flex; flex-direction:column; gap:10px; padding-bottom:24px; }
+  .station-card{
+    display:flex; align-items:center; gap:14px; background: var(--panel); border:1px solid var(--border);
+    border-radius: var(--radius); padding:14px 16px; cursor:pointer;
+  }
+  .station-card:hover{ border-color: var(--accent); }
+  .station-icon{ font-size:28px; width:48px; height:48px; border-radius:14px; background: var(--bg-soft); display:flex; align-items:center; justify-content:center; flex:0 0 auto; }
+  .station-info{ flex:1; min-width:0; }
+  .station-info .s-name{ font-size:15px; font-weight:700; }
+  .station-info .s-desc{ font-size:12px; color: var(--text-muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .station-info .s-members{ font-size:11px; color: var(--accent); margin-top:3px; }
+  .station-joined-tag{ font-size:10px; background: var(--accent-soft); color: var(--accent); padding:3px 8px; border-radius:100px; font-weight:700; flex:0 0 auto; }
+
+  /* ---------- Selo de nível ---------- */
+  .level-badge{
+    display:inline-flex; align-items:center; gap:5px; background: var(--panel); border:1px solid var(--border);
+    border-radius:100px; padding:5px 12px; font-size:12px; font-weight:700; color: var(--text);
+  }
   .market-card{ background: var(--panel); border:1px solid var(--border); border-radius: var(--radius); overflow:hidden; }
   .market-card img{ width:100%; aspect-ratio:1; object-fit:cover; display:block; background: var(--bg); }
   .market-card .m-body{ padding:10px 12px; }
@@ -968,6 +988,53 @@
     </div>
   </section>
 
+  <!-- TELA: Estações (lista) -->
+  <section id="screen-stations" class="screen">
+    <div class="wrap">
+      <div class="section-title"><h2>🚂 Estações</h2><span>Embarque em comunidades</span></div>
+
+      <div class="composer-card">
+        <input type="text" id="newStationIcon" placeholder="Emoji (ex: 🚀)" maxlength="4" style="max-width:90px; display:inline-block; margin-right:8px;" />
+        <input type="text" id="newStationName" placeholder="Nome da estação" maxlength="40" />
+        <textarea id="newStationDesc" placeholder="Sobre o que é essa estação?" maxlength="200"></textarea>
+        <div class="composer-actions">
+          <span></span>
+          <button class="btn btn-primary" id="btnCreateStation">Criar estação</button>
+        </div>
+      </div>
+
+      <div class="station-grid" id="stationGrid"></div>
+    </div>
+  </section>
+
+  <!-- TELA: Detalhe de uma Estação -->
+  <section id="screen-station-detail" class="screen">
+    <div class="room-header">
+      <div><h2 id="stDetailName">Estação</h2><div class="sub" id="stDetailMeta"></div></div>
+      <button class="btn btn-ghost" id="btnBackFromStation">← Voltar</button>
+    </div>
+    <div class="wrap">
+      <p class="settings-hint" id="stDetailDesc"></p>
+      <button class="btn btn-primary" id="btnJoinStation" style="margin-bottom:16px;">🚂 Embarcar</button>
+
+      <div class="composer-card">
+        <textarea id="stationPostText" placeholder="Compartilhe algo com essa estação…" maxlength="500"></textarea>
+        <div id="stationImgPreviewBox"></div>
+        <input type="file" id="stationImageCameraInput" accept="image/*" capture="environment" style="display:none" />
+        <input type="file" id="stationImageGalleryInput" accept="image/*" style="display:none" />
+        <div class="composer-actions">
+          <div class="btn-row">
+            <button class="btn btn-ghost" id="btnTakeStationPhoto">📷 Tirar foto</button>
+            <button class="btn btn-ghost" id="btnChooseStationPhoto">🖼️ Galeria</button>
+          </div>
+          <button class="btn btn-primary" id="btnPublishStationPost">Publicar</button>
+        </div>
+      </div>
+
+      <div class="post-list" id="stationPostList"></div>
+    </div>
+  </section>
+
   <!-- TELA: Perfil de um usuário -->
   <section id="screen-profile-view" class="screen orkut-page">
     <div class="room-header">
@@ -988,6 +1055,7 @@
 
       <div class="orkut-right">
         <h2 class="orkut-title" id="profileName"></h2>
+        <span class="level-badge" id="profileLevelBadge" style="display:none;"></span>
         <div class="orkut-stats-bar">
           <button class="orkut-stat" id="btnShowFollowers"><strong id="followersCount">0</strong><span>seguidores</span></button>
           <button class="orkut-stat" id="btnShowFollowing"><strong id="followingCount">0</strong><span>seguindo</span></button>
@@ -1111,6 +1179,8 @@ const screens = {
   business: document.getElementById('screen-business'),
   explore: document.getElementById('screen-explore'),
   notifications: document.getElementById('screen-notifications'),
+  stations: document.getElementById('screen-stations'),
+  stationDetail: document.getElementById('screen-station-detail'),
 };
 function showScreen(name){
   Object.values(screens).forEach(s => s.classList.remove('active'));
@@ -1593,6 +1663,7 @@ socket.on('auth_success', ({ isNewUser, profile }) => {
   socket.emit('get_biz_posts');
   socket.emit('get_stories');
   socket.emit('get_notifications');
+  socket.emit('get_stations');
   renderMyProfileCard();
   showScreen('feed');
 });
@@ -1610,6 +1681,7 @@ document.getElementById('btnContinue').addEventListener('click', () => {
   socket.emit('get_biz_posts');
   socket.emit('get_stories');
   socket.emit('get_notifications');
+  socket.emit('get_stations');
   renderMyProfileCard();
   showScreen('feed');
 });
@@ -1624,6 +1696,7 @@ const NAV_ITEMS = [
   { screen: 'feed',          icon: '🏠', label: 'Início' },
   { screen: 'explore',       icon: '🔍', label: 'Explorar' },
   { screen: 'notifications', icon: '🔔', label: 'Notificações' },
+  { screen: 'stations',      icon: '🚂', label: 'Estações' },
   { screen: 'lobby',         icon: '💬', label: 'Salas' },
   { screen: 'messages',      icon: '✉️', label: 'Mensagens' },
   { screen: 'photos',        icon: '🖼️', label: 'Fotos' },
@@ -1647,6 +1720,7 @@ globalNav.querySelectorAll('.nav-item').forEach(btn => {
     if (btn.dataset.screen === 'business') socket.emit('get_biz_posts');
     if (btn.dataset.screen === 'notifications') { socket.emit('get_notifications'); socket.emit('mark_notifications_read'); setUnreadBadge(0); }
     if (btn.dataset.screen === 'explore') socket.emit('get_trending');
+    if (btn.dataset.screen === 'stations') socket.emit('get_stations');
   });
 });
 function updateGlobalNav(activeScreen){
@@ -1719,6 +1793,14 @@ function openProfile(id, fallbackName, fallbackAvatar) {
   document.getElementById('profileName').textContent = u.name || 'Visitante';
   document.getElementById('profileNameSmall').textContent = u.name || 'Visitante';
   document.getElementById('profileSubline').textContent = [u.city, u.work].filter(Boolean).join(' · ') || '\u00A0';
+
+  const levelBadge = document.getElementById('profileLevelBadge');
+  if (u.level) {
+    levelBadge.style.display = 'inline-flex';
+    levelBadge.textContent = `${u.level.icon} ${u.level.tier}`;
+  } else {
+    levelBadge.style.display = 'none';
+  }
 
   const box = document.getElementById('profileBigAvatar');
   box.innerHTML = avatarMediaHtml(u) + badgeHtml(u.status);
@@ -2299,6 +2381,9 @@ socket.on('new_post', (post) => {
   renderPosts();
   if (screens.photos.classList.contains('active')) renderPhotosScreen();
   if (screens.videos.classList.contains('active')) renderVideosScreen();
+  if (post.stationId && post.stationId === currentStationId && screens.stationDetail.classList.contains('active')) {
+    openStationDetail(currentStationId);
+  }
 });
 socket.on('post_liked', ({ postId, likeCount, likedBy }) => {
   const p = allPosts.find(p => p.id === postId);
@@ -2315,11 +2400,12 @@ let expandedComments = new Set(); // ids de posts com a caixa de comentários ab
 
 function renderPosts(){
   const el = document.getElementById('postList');
-  if (allPosts.length === 0){
+  const feedPosts = allPosts.filter(p => !p.stationId); // posts de estações não aparecem no Feed geral
+  if (feedPosts.length === 0){
     el.innerHTML = '<div class="empty-feed">Ainda não tem nenhum post. Seja o primeiro a publicar! 🎉</div>';
     return;
   }
-  el.innerHTML = allPosts.map(postCardHtml).join('');
+  el.innerHTML = feedPosts.map(postCardHtml).join('');
   wirePostCardEvents(el);
 }
 function wirePostCardEvents(el){
@@ -2725,6 +2811,117 @@ function renderBizList(){
   }
   el.innerHTML = allBizPosts.map(bizCardHtml).join('');
 }
+
+// ==================== ESTAÇÕES ====================
+let allStations = [];
+let myStationMemberships = new Set(); // ids das estações que EU sou membro (fonte confiável, vem do get_stations)
+let currentStationId = null;
+let pendingStationImage = null;
+
+socket.on('station_list', (list) => {
+  allStations = list;
+  myStationMemberships = new Set(list.filter(s => s.isMember).map(s => s.id));
+  renderStationGrid();
+});
+socket.on('new_station', (station) => {
+  if (!allStations.find(s => s.id === station.id)) allStations.push(station);
+  renderStationGrid();
+});
+socket.on('station_updated', (station) => {
+  const idx = allStations.findIndex(s => s.id === station.id);
+  const wasMember = myStationMemberships.has(station.id);
+  if (idx >= 0) allStations[idx] = { ...station, isMember: wasMember };
+  else allStations.push({ ...station, isMember: wasMember });
+  renderStationGrid();
+  if (currentStationId === station.id) renderStationDetailHeader();
+});
+socket.on('station_joined_ack', ({ stationId }) => {
+  myStationMemberships.add(stationId);
+  renderStationGrid();
+});
+
+function renderStationGrid(){
+  const grid = document.getElementById('stationGrid');
+  if (allStations.length === 0){
+    grid.innerHTML = '<div class="empty-grid">Nenhuma estação ainda.</div>';
+    return;
+  }
+  grid.innerHTML = allStations.map(s => `
+    <div class="station-card" data-id="${s.id}">
+      <div class="station-icon">${s.icon || '🚂'}</div>
+      <div class="station-info">
+        <div class="s-name">${escapeHtml(s.name)}</div>
+        <div class="s-desc">${escapeHtml(s.description || '')}</div>
+        <div class="s-members">${s.memberCount} membro${s.memberCount === 1 ? '' : 's'}</div>
+      </div>
+      ${myStationMemberships.has(s.id) ? '<span class="station-joined-tag">embarcado</span>' : ''}
+    </div>
+  `).join('');
+  grid.querySelectorAll('.station-card').forEach(card => {
+    card.addEventListener('click', () => openStationDetail(card.dataset.id));
+  });
+}
+
+document.getElementById('btnCreateStation').addEventListener('click', () => {
+  const name = document.getElementById('newStationName').value.trim();
+  const description = document.getElementById('newStationDesc').value.trim();
+  const icon = document.getElementById('newStationIcon').value.trim() || '🚂';
+  if (!name) return;
+  socket.emit('create_station', { name, description, icon });
+  document.getElementById('newStationName').value = '';
+  document.getElementById('newStationDesc').value = '';
+  document.getElementById('newStationIcon').value = '';
+});
+
+function openStationDetail(stationId){
+  currentStationId = stationId;
+  renderStationDetailHeader();
+  document.getElementById('stationPostList').innerHTML = allPosts
+    .filter(p => p.stationId === stationId)
+    .map(postCardHtml).join('') || '<div class="empty-feed">Ainda não tem posts nessa estação. Comece você! 🚂</div>';
+  wirePostCardEvents(document.getElementById('stationPostList'));
+  showScreen('stationDetail');
+}
+function renderStationDetailHeader(){
+  const s = allStations.find(st => st.id === currentStationId);
+  if (!s) return;
+  document.getElementById('stDetailName').textContent = `${s.icon || '🚂'} ${s.name}`;
+  document.getElementById('stDetailMeta').textContent = `${s.memberCount} membro${s.memberCount === 1 ? '' : 's'}`;
+  document.getElementById('stDetailDesc').textContent = s.description || '';
+  const btn = document.getElementById('btnJoinStation');
+  const isMember = myStationMemberships.has(s.id);
+  btn.textContent = isMember ? '✅ Você está embarcado' : '🚂 Embarcar';
+  btn.classList.toggle('btn-ghost', isMember);
+  btn.classList.toggle('btn-primary', !isMember);
+}
+document.getElementById('btnJoinStation').addEventListener('click', () => {
+  if (!currentStationId) return;
+  if (myStationMemberships.has(currentStationId)) {
+    myStationMemberships.delete(currentStationId);
+    socket.emit('leave_station', { stationId: currentStationId });
+  } else {
+    myStationMemberships.add(currentStationId);
+    socket.emit('join_station', { stationId: currentStationId });
+  }
+  renderStationDetailHeader();
+  renderStationGrid();
+});
+document.getElementById('btnBackFromStation').addEventListener('click', () => showScreen('stations'));
+
+wirePhotoPicker('btnTakeStationPhoto', 'stationImageCameraInput', 'btnChooseStationPhoto', 'stationImageGalleryInput', async (file) => {
+  pendingStationImage = await resizeImage(file);
+  document.getElementById('stationImgPreviewBox').innerHTML = `
+    <div class="img-preview"><img src="${pendingStationImage}" /></div>`;
+});
+document.getElementById('btnPublishStationPost').addEventListener('click', () => {
+  const textEl = document.getElementById('stationPostText');
+  const text = textEl.value.trim();
+  if (!text && !pendingStationImage) return;
+  socket.emit('create_post', { text, image: pendingStationImage, stationId: currentStationId });
+  textEl.value = '';
+  pendingStationImage = null;
+  document.getElementById('stationImgPreviewBox').innerHTML = '';
+});
 
 // ==================== MENSAGENS (estilo MSN) ====================
 let currentDmWith = null;

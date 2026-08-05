@@ -120,6 +120,40 @@ function normalizeUsername(u) {
   return (u || '').trim().toLowerCase();
 }
 
+// ---- Estações (comunidades temáticas) — em memória ----
+const stations = new Map(); // id -> { id, name, description, icon, creatorId, creatorName, members: Set(userId), ts }
+const PRESET_STATIONS = [
+  { id: 'st_tecnologia', name: 'Estação Tecnologia', description: 'Novidades, dicas e discussões sobre tech', icon: '💻' },
+  { id: 'st_games',      name: 'Estação Games',      description: 'Tudo sobre jogos e gameplay', icon: '🎮' },
+  { id: 'st_filmes',     name: 'Estação Filmes',     description: 'Cinema, séries e streaming', icon: '🎬' },
+  { id: 'st_musica',     name: 'Estação Música',      description: 'Playlists, shows e descobertas musicais', icon: '🎵' },
+  { id: 'st_esportes',   name: 'Estação Esportes',   description: 'Futebol e todos os esportes', icon: '⚽' },
+];
+PRESET_STATIONS.forEach(s => {
+  stations.set(s.id, { ...s, creatorId: null, creatorName: 'Social Station', members: new Set(), ts: Date.now() });
+});
+function serializeStation(s, viewerId) {
+  return {
+    id: s.id, name: s.name, description: s.description, icon: s.icon,
+    creatorId: s.creatorId, creatorName: s.creatorName, ts: s.ts,
+    memberCount: s.members.size,
+    isMember: viewerId ? s.members.has(viewerId) : false,
+  };
+}
+
+// ---- Sistema de níveis (pontos por engajamento) ----
+const userPoints = new Map(); // userId -> number
+function addPoints(userId, amount) {
+  if (!userId) return;
+  userPoints.set(userId, (userPoints.get(userId) || 0) + amount);
+}
+function levelInfo(points) {
+  if (points >= 70) return { tier: 'Mestre da Estação', icon: '💎' };
+  if (points >= 30) return { tier: 'Condutor', icon: '🥇' };
+  if (points >= 10) return { tier: 'Viajante', icon: '🥈' };
+  return { tier: 'Explorador', icon: '🥉' };
+}
+
 // ---- Notificações (em memória, por socket.id) ----
 const notifications = new Map(); // userId -> [ {id, type, fromId, fromName, fromAvatarType, fromAvatarConfig, fromAvatarUrl, ts, read} ]
 function pushNotification(userId, notif) {
@@ -183,11 +217,15 @@ function followCounts(userId) {
 const onlineUsers = new Map(); // socketId -> { name, avatarUrl, status }
 
 function broadcastOnlineUsers() {
-  const list = Array.from(onlineUsers.entries()).map(([id, u]) => ({
-    id, name: u.name, avatarUrl: u.avatarUrl, avatarType: u.avatarType, avatarConfig: u.avatarConfig,
-    photoUrl: u.photoUrl, city: u.city, work: u.work, theme: u.theme, profileSongUrl: u.profileSongUrl, status: u.status,
-    relationship: u.relationship, birthday: u.birthday, bio: u.bio, hometown: u.hometown, website: u.website, hobbies: u.hobbies,
-  }));
+  const list = Array.from(onlineUsers.entries()).map(([id, u]) => {
+    const points = userPoints.get(id) || 0;
+    return {
+      id, name: u.name, avatarUrl: u.avatarUrl, avatarType: u.avatarType, avatarConfig: u.avatarConfig,
+      photoUrl: u.photoUrl, city: u.city, work: u.work, theme: u.theme, profileSongUrl: u.profileSongUrl, status: u.status,
+      relationship: u.relationship, birthday: u.birthday, bio: u.bio, hometown: u.hometown, website: u.website, hobbies: u.hobbies,
+      points, level: levelInfo(points),
+    };
+  });
   io.emit('online_users', list);
 }
 
@@ -209,6 +247,7 @@ function serializePost(p) {
     text: p.text,
     image: p.image,
     videoUrl: p.videoUrl || null,
+    stationId: p.stationId || null,
     ts: p.ts,
     likeCount: p.likes.size,
     likedBy: Array.from(p.likes),
@@ -435,7 +474,7 @@ io.on('connection', (socket) => {
     socket.emit('post_list', posts.map(serializePost));
   });
 
-  socket.on('create_post', ({ text, image, videoUrl, sharedFrom }) => {
+  socket.on('create_post', ({ text, image, videoUrl, sharedFrom, stationId }) => {
     if (!socket.data.profile) return;
     const cleanText = (text || '').trim().slice(0, 500);
     const cleanVideo = (videoUrl || '').trim().slice(0, 500);
@@ -450,6 +489,7 @@ io.on('connection', (socket) => {
       text: cleanText,
       image: image || null, // dataURL já redimensionado no cliente
       videoUrl: cleanVideo || null,
+      stationId: stationId || null,
       sharedFrom: sharedFrom ? { name: String(sharedFrom.name || '').slice(0, 24) } : null,
       likes: new Set(),
       comments: [],
@@ -458,6 +498,8 @@ io.on('connection', (socket) => {
     posts.unshift(post);
     if (posts.length > 200) posts.pop();
     io.emit('new_post', serializePost(post));
+    addPoints(socket.id, 2);
+    broadcastOnlineUsers();
   });
 
   socket.on('add_comment', ({ postId, text }) => {
@@ -505,6 +547,8 @@ io.on('connection', (socket) => {
         fromAvatarType: socket.data.profile.avatarType, fromAvatarConfig: socket.data.profile.avatarConfig, fromAvatarUrl: socket.data.profile.avatarUrl,
         postId, ts: Date.now(), read: false,
       });
+      addPoints(post.authorId, 1);
+      broadcastOnlineUsers();
     }
   });
 
@@ -567,6 +611,44 @@ io.on('connection', (socket) => {
     listings.unshift(listing);
     if (listings.length > 200) listings.pop();
     io.emit('new_listing', serializeListing(listing));
+  });
+
+  socket.on('get_stations', () => {
+    socket.emit('station_list', Array.from(stations.values()).map(s => serializeStation(s, socket.id)));
+  });
+
+  socket.on('create_station', ({ name, description, icon }) => {
+    if (!socket.data.profile) return;
+    const cleanName = (name || '').trim().slice(0, 40);
+    if (!cleanName) return;
+    const id = 'st_' + Date.now() + '_' + socket.id;
+    const station = {
+      id, name: cleanName,
+      description: (description || '').trim().slice(0, 200),
+      icon: (icon || '🚂').slice(0, 4),
+      creatorId: socket.id, creatorName: socket.data.profile.name,
+      members: new Set([socket.id]),
+      ts: Date.now(),
+    };
+    stations.set(id, station);
+    io.emit('new_station', serializeStation(station, null));
+    socket.emit('station_joined_ack', { stationId: id });
+  });
+
+  socket.on('join_station', ({ stationId }) => {
+    const s = stations.get(stationId);
+    if (!s || !socket.data.profile) return;
+    s.members.add(socket.id);
+    addPoints(socket.id, 3);
+    io.emit('station_updated', serializeStation(s, null));
+    broadcastOnlineUsers();
+  });
+
+  socket.on('leave_station', ({ stationId }) => {
+    const s = stations.get(stationId);
+    if (!s) return;
+    s.members.delete(socket.id);
+    io.emit('station_updated', serializeStation(s, null));
   });
 
   socket.on('get_biz_posts', () => {
