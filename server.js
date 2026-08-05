@@ -120,6 +120,17 @@ function normalizeUsername(u) {
   return (u || '').trim().toLowerCase();
 }
 
+// ---- Notificações (em memória, por socket.id) ----
+const notifications = new Map(); // userId -> [ {id, type, fromId, fromName, fromAvatarType, fromAvatarConfig, fromAvatarUrl, ts, read} ]
+function pushNotification(userId, notif) {
+  if (!userId || userId === notif.fromId) return; // não notifica a própria ação
+  if (!notifications.has(userId)) notifications.set(userId, []);
+  const list = notifications.get(userId);
+  list.unshift(notif);
+  if (list.length > 100) list.pop();
+  io.to(userId).emit('new_notification', notif);
+}
+
 // ---- Stories (em memória, somem sozinhas depois de 24h) ----
 const stories = [];
 const STORY_LIFETIME_MS = 24 * 60 * 60 * 1000;
@@ -293,6 +304,14 @@ io.on('connection', (socket) => {
     ensureSet(following, socket.id).add(targetId);
     io.to(targetId).emit('follow_changed', { userId: targetId, ...followCounts(targetId) });
     io.to(socket.id).emit('follow_changed', { userId: socket.id, ...followCounts(socket.id) });
+    if (socket.data.profile) {
+      pushNotification(targetId, {
+        id: Date.now() + '_n_' + socket.id, type: 'follow',
+        fromId: socket.id, fromName: socket.data.profile.name,
+        fromAvatarType: socket.data.profile.avatarType, fromAvatarConfig: socket.data.profile.avatarConfig, fromAvatarUrl: socket.data.profile.avatarUrl,
+        ts: Date.now(), read: false,
+      });
+    }
   });
 
   socket.on('unfollow_user', ({ targetId }) => {
@@ -460,17 +479,71 @@ io.on('connection', (socket) => {
     post.comments.push(comment);
     if (post.comments.length > 200) post.comments.shift();
     io.emit('new_comment', { postId, comment });
+    pushNotification(post.authorId, {
+      id: Date.now() + '_n_' + socket.id, type: 'comment',
+      fromId: socket.id, fromName: socket.data.profile.name,
+      fromAvatarType: socket.data.profile.avatarType, fromAvatarConfig: socket.data.profile.avatarConfig, fromAvatarUrl: socket.data.profile.avatarUrl,
+      postId, ts: Date.now(), read: false,
+    });
   });
 
   socket.on('like_post', ({ postId }) => {
     const post = posts.find(p => p.id === postId);
     if (!post) return;
+    let justLiked = false;
     if (post.likes.has(socket.id)) {
       post.likes.delete(socket.id);
     } else {
       post.likes.add(socket.id);
+      justLiked = true;
     }
     io.emit('post_liked', { postId: post.id, likeCount: post.likes.size, likedBy: Array.from(post.likes) });
+    if (justLiked && socket.data.profile) {
+      pushNotification(post.authorId, {
+        id: Date.now() + '_n_' + socket.id, type: 'like',
+        fromId: socket.id, fromName: socket.data.profile.name,
+        fromAvatarType: socket.data.profile.avatarType, fromAvatarConfig: socket.data.profile.avatarConfig, fromAvatarUrl: socket.data.profile.avatarUrl,
+        postId, ts: Date.now(), read: false,
+      });
+    }
+  });
+
+  socket.on('get_notifications', () => {
+    socket.emit('notification_list', notifications.get(socket.id) || []);
+  });
+
+  socket.on('mark_notifications_read', () => {
+    const list = notifications.get(socket.id);
+    if (list) list.forEach(n => { n.read = true; });
+  });
+
+  socket.on('search', ({ query }) => {
+    const q = (query || '').trim().toLowerCase();
+    if (!q) { socket.emit('search_results', { query: q, people: [], posts: [], listings: [], bizPosts: [] }); return; }
+    const people = Array.from(onlineUsers.entries())
+      .filter(([id, u]) => u.name && u.name.toLowerCase().includes(q))
+      .map(([id, u]) => ({ id, name: u.name, avatarUrl: u.avatarUrl, avatarType: u.avatarType, avatarConfig: u.avatarConfig }))
+      .slice(0, 20);
+    const matchedPosts = posts.filter(p => (p.text || '').toLowerCase().includes(q)).slice(0, 20).map(serializePost);
+    const matchedListings = listings.filter(l => (l.title || '').toLowerCase().includes(q) || (l.description || '').toLowerCase().includes(q)).slice(0, 20).map(serializeListing);
+    const matchedBiz = bizPosts.filter(b => (b.businessName || '').toLowerCase().includes(q) || (b.category || '').toLowerCase().includes(q)).slice(0, 20).map(serializeBizPost);
+    socket.emit('search_results', { query: q, people, posts: matchedPosts, listings: matchedListings, bizPosts: matchedBiz });
+  });
+
+  socket.on('get_trending', () => {
+    const counts = {};
+    posts.forEach(p => {
+      const tags = (p.text || '').match(/#[\p{L}0-9_]+/gu) || [];
+      tags.forEach(tag => {
+        const key = tag.toLowerCase();
+        counts[key] = (counts[key] || 0) + 1;
+      });
+    });
+    const trending = Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10)
+      .map(([tag, count]) => ({ tag, count }));
+    socket.emit('trending_list', trending);
   });
 
   socket.on('get_listings', () => {

@@ -500,6 +500,42 @@
   .market-card .m-seller{ font-size:11px; color: var(--text-muted); }
 
   .biz-list{ display:flex; flex-direction:column; gap:14px; padding-bottom:24px; }
+
+  /* ---------- Explorar ---------- */
+  .search-bar{ margin-bottom:16px; }
+  .search-bar input{
+    width:100%; padding:13px 16px; border-radius:100px; border:1px solid var(--border);
+    background: var(--panel); color: var(--text); font-family: var(--font-body); font-size:14px;
+  }
+  .trending-list{ display:flex; flex-direction:column; gap:8px; padding-bottom:24px; }
+  .trending-item{
+    display:flex; align-items:center; justify-content:space-between; background: var(--panel);
+    border:1px solid var(--border); border-radius:12px; padding:12px 16px; cursor:pointer;
+  }
+  .trending-item .tag{ font-weight:700; color: var(--accent); font-size:14px; }
+  .trending-item .count{ font-size:11.5px; color: var(--text-muted); }
+  .explore-group{ margin-bottom:20px; }
+
+  /* ---------- Notificações ---------- */
+  .notif-list{ display:flex; flex-direction:column; gap:8px; padding-bottom:24px; }
+  .notif-item{
+    display:flex; align-items:center; gap:12px; background: var(--panel); border:1px solid var(--border);
+    border-radius:12px; padding:12px 14px; cursor:pointer;
+  }
+  .notif-item.unread{ border-color: var(--accent); background: var(--accent-soft); }
+  .notif-avatar{ width:38px; height:38px; border-radius:50%; overflow:hidden; flex:0 0 auto; background: var(--bg-soft); }
+  .notif-avatar .fallback{ width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:13px; background: var(--accent-gradient); color:#fff; }
+  .notif-text{ font-size:13.5px; color: var(--text); flex:1; }
+  .notif-text strong{ font-weight:700; }
+  .notif-time{ font-size:11px; color: var(--text-muted); white-space:nowrap; }
+  .notif-icon{ font-size:16px; }
+
+  /* ---------- Badge de notificação não lida no menu ---------- */
+  .nav-icon{ position:relative; display:inline-block; }
+  .nav-badge{
+    position:absolute; top:-4px; right:-6px; background:#FF4D4D; color:#fff; font-size:9px; font-weight:700;
+    min-width:15px; height:15px; border-radius:100px; display:flex; align-items:center; justify-content:center; padding:0 3px;
+  }
   .biz-card{ background: var(--panel); border:1px solid var(--border); border-radius: var(--radius); overflow:hidden; }
   .biz-card img{ width:100%; max-height:200px; object-fit:cover; display:block; background: var(--bg); }
   .biz-card .b-body{ padding:14px; }
@@ -890,6 +926,48 @@
     </div>
   </section>
 
+  <!-- TELA: Explorar -->
+  <section id="screen-explore" class="screen">
+    <div class="wrap">
+      <div class="search-bar">
+        <input type="text" id="exploreSearchInput" placeholder="Pesquisar pessoas, posts, hashtags..." />
+      </div>
+
+      <div id="exploreDefaultView">
+        <div class="section-title"><h2>🔥 Tendências</h2><span></span></div>
+        <div class="trending-list" id="trendingList"></div>
+      </div>
+
+      <div id="exploreResultsView" style="display:none;">
+        <div class="explore-group" id="explorePeopleGroup" style="display:none;">
+          <div class="section-title"><h2>Pessoas</h2><span></span></div>
+          <div class="contact-list" id="explorePeopleList"></div>
+        </div>
+        <div class="explore-group" id="explorePostsGroup" style="display:none;">
+          <div class="section-title"><h2>Posts</h2><span></span></div>
+          <div class="post-list" id="explorePostsList"></div>
+        </div>
+        <div class="explore-group" id="exploreBizGroup" style="display:none;">
+          <div class="section-title"><h2>Business</h2><span></span></div>
+          <div class="biz-list" id="exploreBizList"></div>
+        </div>
+        <div class="explore-group" id="exploreListingsGroup" style="display:none;">
+          <div class="section-title"><h2>Feira</h2><span></span></div>
+          <div class="market-grid" id="exploreListingsList"></div>
+        </div>
+        <div class="empty-grid" id="exploreEmptyMsg" style="display:none;">Nada encontrado pra essa busca.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TELA: Notificações -->
+  <section id="screen-notifications" class="screen">
+    <div class="wrap">
+      <div class="section-title"><h2>🔔 Notificações</h2><span></span></div>
+      <div class="notif-list" id="notifList"></div>
+    </div>
+  </section>
+
   <!-- TELA: Perfil de um usuário -->
   <section id="screen-profile-view" class="screen orkut-page">
     <div class="room-header">
@@ -1031,6 +1109,8 @@ const screens = {
   videos: document.getElementById('screen-videos'),
   marketplace: document.getElementById('screen-marketplace'),
   business: document.getElementById('screen-business'),
+  explore: document.getElementById('screen-explore'),
+  notifications: document.getElementById('screen-notifications'),
 };
 function showScreen(name){
   Object.values(screens).forEach(s => s.classList.remove('active'));
@@ -1512,6 +1592,7 @@ socket.on('auth_success', ({ isNewUser, profile }) => {
   socket.emit('get_listings');
   socket.emit('get_biz_posts');
   socket.emit('get_stories');
+  socket.emit('get_notifications');
   renderMyProfileCard();
   showScreen('feed');
 });
@@ -1528,6 +1609,7 @@ document.getElementById('btnContinue').addEventListener('click', () => {
   socket.emit('get_listings');
   socket.emit('get_biz_posts');
   socket.emit('get_stories');
+  socket.emit('get_notifications');
   renderMyProfileCard();
   showScreen('feed');
 });
@@ -1539,19 +1621,21 @@ document.getElementById('btnFacebookLoginLanding').addEventListener('click', () 
 // -------- Navegação entre abas --------
 // -------- Navegação global (ícones fixos, estilo Facebook/Orkut) --------
 const NAV_ITEMS = [
-  { screen: 'feed',        icon: '🏠', label: 'Início' },
-  { screen: 'lobby',       icon: '💬', label: 'Salas' },
-  { screen: 'messages',    icon: '✉️', label: 'Mensagens' },
-  { screen: 'photos',      icon: '🖼️', label: 'Fotos' },
-  { screen: 'videos',      icon: '🎥', label: 'Vídeos' },
-  { screen: 'marketplace', icon: '🛒', label: 'Feira' },
-  { screen: 'business',    icon: '💼', label: 'Business' },
+  { screen: 'feed',          icon: '🏠', label: 'Início' },
+  { screen: 'explore',       icon: '🔍', label: 'Explorar' },
+  { screen: 'notifications', icon: '🔔', label: 'Notificações' },
+  { screen: 'lobby',         icon: '💬', label: 'Salas' },
+  { screen: 'messages',      icon: '✉️', label: 'Mensagens' },
+  { screen: 'photos',        icon: '🖼️', label: 'Fotos' },
+  { screen: 'videos',        icon: '🎥', label: 'Vídeos' },
+  { screen: 'marketplace',   icon: '🛒', label: 'Feira' },
+  { screen: 'business',      icon: '💼', label: 'Business' },
 ];
 const NAV_SCREENS = new Set(NAV_ITEMS.map(i => i.screen));
 const globalNav = document.getElementById('globalNav');
 globalNav.innerHTML = NAV_ITEMS.map(item => `
   <button class="nav-item" data-screen="${item.screen}">
-    <span class="nav-icon">${item.icon}</span><span class="nav-label">${item.label}</span>
+    <span class="nav-icon">${item.icon}${item.screen === 'notifications' ? '<span class=\"nav-badge\" id=\"notifBadge\" style=\"display:none;\"></span>' : ''}</span><span class="nav-label">${item.label}</span>
   </button>
 `).join('');
 globalNav.querySelectorAll('.nav-item').forEach(btn => {
@@ -1561,6 +1645,8 @@ globalNav.querySelectorAll('.nav-item').forEach(btn => {
     if (btn.dataset.screen === 'videos') renderVideosScreen();
     if (btn.dataset.screen === 'marketplace') socket.emit('get_listings');
     if (btn.dataset.screen === 'business') socket.emit('get_biz_posts');
+    if (btn.dataset.screen === 'notifications') { socket.emit('get_notifications'); socket.emit('mark_notifications_read'); setUnreadBadge(0); }
+    if (btn.dataset.screen === 'explore') socket.emit('get_trending');
   });
 });
 function updateGlobalNav(activeScreen){
@@ -1913,6 +1999,125 @@ function escapeHtml(str){
   return div.innerHTML;
 }
 
+// ==================== NOTIFICAÇÕES ====================
+let allNotifications = [];
+let unreadNotifCount = 0;
+
+function setUnreadBadge(n){
+  unreadNotifCount = n;
+  const badge = document.getElementById('notifBadge');
+  if (!badge) return;
+  if (n > 0) { badge.textContent = n > 9 ? '9+' : n; badge.style.display = 'flex'; }
+  else { badge.style.display = 'none'; }
+}
+
+socket.on('notification_list', (list) => {
+  allNotifications = list;
+  renderNotifList();
+});
+socket.on('new_notification', (notif) => {
+  allNotifications.unshift(notif);
+  if (!screens.notifications.classList.contains('active')) setUnreadBadge(unreadNotifCount + 1);
+  renderNotifList();
+});
+
+function notifText(n){
+  if (n.type === 'like') return `<strong>${escapeHtml(n.fromName)}</strong> curtiu seu post`;
+  if (n.type === 'comment') return `<strong>${escapeHtml(n.fromName)}</strong> comentou no seu post`;
+  if (n.type === 'follow') return `<strong>${escapeHtml(n.fromName)}</strong> começou a seguir você`;
+  return escapeHtml(n.fromName);
+}
+function notifIcon(n){
+  if (n.type === 'like') return '❤️';
+  if (n.type === 'comment') return '💬';
+  if (n.type === 'follow') return '➕';
+  return '🔔';
+}
+function renderNotifList(){
+  const el = document.getElementById('notifList');
+  if (allNotifications.length === 0){
+    el.innerHTML = '<div class="empty-grid">Nenhuma notificação ainda.</div>';
+    return;
+  }
+  el.innerHTML = allNotifications.map(n => `
+    <div class="notif-item ${n.read ? '' : 'unread'}" data-from="${n.fromId}">
+      <div class="notif-avatar">${avatarMediaHtml({ name: n.fromName, avatarType: n.fromAvatarType, avatarConfig: n.fromAvatarConfig, avatarUrl: n.fromAvatarUrl })}</div>
+      <div class="notif-text"><span class="notif-icon">${notifIcon(n)}</span> ${notifText(n)}</div>
+      <div class="notif-time">${timeAgo(n.ts)}</div>
+    </div>
+  `).join('');
+  el.querySelectorAll('.notif-item').forEach(item => {
+    item.addEventListener('click', () => openProfile(item.dataset.from, null, null));
+  });
+}
+
+// ==================== EXPLORAR ====================
+socket.on('trending_list', (list) => {
+  const el = document.getElementById('trendingList');
+  if (list.length === 0){
+    el.innerHTML = '<div class="empty-grid">Ainda não tem hashtags em alta. Usa # nos seus posts!</div>';
+    return;
+  }
+  el.innerHTML = list.map(t => `
+    <div class="trending-item" data-tag="${escapeHtml(t.tag)}">
+      <span class="tag">${escapeHtml(t.tag)}</span>
+      <span class="count">${t.count} post${t.count === 1 ? '' : 's'}</span>
+    </div>
+  `).join('');
+  el.querySelectorAll('.trending-item').forEach(item => {
+    item.addEventListener('click', () => {
+      document.getElementById('exploreSearchInput').value = item.dataset.tag;
+      runSearch(item.dataset.tag);
+    });
+  });
+});
+
+let searchDebounce = null;
+document.getElementById('exploreSearchInput').addEventListener('input', (e) => {
+  clearTimeout(searchDebounce);
+  const q = e.target.value.trim();
+  if (!q) { showExploreDefault(); return; }
+  searchDebounce = setTimeout(() => runSearch(q), 300);
+});
+function runSearch(q){
+  socket.emit('search', { query: q });
+}
+function showExploreDefault(){
+  document.getElementById('exploreDefaultView').style.display = '';
+  document.getElementById('exploreResultsView').style.display = 'none';
+}
+socket.on('search_results', ({ query, people, posts: foundPosts, listings: foundListings, bizPosts: foundBiz }) => {
+  document.getElementById('exploreDefaultView').style.display = 'none';
+  document.getElementById('exploreResultsView').style.display = '';
+  const anyResults = people.length || foundPosts.length || foundListings.length || foundBiz.length;
+  document.getElementById('exploreEmptyMsg').style.display = anyResults ? 'none' : 'block';
+
+  const peopleGroup = document.getElementById('explorePeopleGroup');
+  peopleGroup.style.display = people.length ? '' : 'none';
+  document.getElementById('explorePeopleList').innerHTML = people.map(u => `
+    <div class="contact-card" data-id="${u.id}">
+      <div class="contact-avatar">${avatarMediaHtml(u)}</div>
+      <div class="contact-info"><div class="n">${escapeHtml(u.name)}</div></div>
+    </div>
+  `).join('');
+  document.querySelectorAll('#explorePeopleList .contact-card').forEach(c => {
+    c.addEventListener('click', () => openProfile(c.dataset.id, null, null));
+  });
+
+  const postsGroup = document.getElementById('explorePostsGroup');
+  postsGroup.style.display = foundPosts.length ? '' : 'none';
+  document.getElementById('explorePostsList').innerHTML = foundPosts.map(postCardHtml).join('');
+  wirePostCardEvents(document.getElementById('explorePostsList'));
+
+  const bizGroup = document.getElementById('exploreBizGroup');
+  bizGroup.style.display = foundBiz.length ? '' : 'none';
+  document.getElementById('exploreBizList').innerHTML = foundBiz.map(bizCardHtml).join('');
+
+  const listingsGroup = document.getElementById('exploreListingsGroup');
+  listingsGroup.style.display = foundListings.length ? '' : 'none';
+  document.getElementById('exploreListingsList').innerHTML = foundListings.map(marketCardHtml).join('');
+});
+
 // ==================== STORIES ====================
 let allStories = [];
 let seenStories = new Set(); // authorIds já vistos nesta sessão
@@ -2115,6 +2320,9 @@ function renderPosts(){
     return;
   }
   el.innerHTML = allPosts.map(postCardHtml).join('');
+  wirePostCardEvents(el);
+}
+function wirePostCardEvents(el){
   el.querySelectorAll('.like-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       socket.emit('like_post', { postId: btn.dataset.post });
@@ -2440,14 +2648,8 @@ socket.on('new_listing', (listing) => {
   allListings.unshift(listing);
   renderMarket();
 });
-function renderMarket(){
-  document.getElementById('marketHint').textContent = `${allListings.length} anúncios`;
-  const grid = document.getElementById('marketGrid');
-  if (allListings.length === 0){
-    grid.innerHTML = '<div class="empty-grid">Nenhum item à venda ainda.</div>';
-    return;
-  }
-  grid.innerHTML = allListings.map(l => `
+function marketCardHtml(l){
+  return `
     <div class="market-card">
       ${l.image ? `<img src="${l.image}" />` : `<img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23161B33'/%3E%3C/svg%3E" />`}
       <div class="m-body">
@@ -2456,7 +2658,16 @@ function renderMarket(){
         <div class="m-seller">${escapeHtml(l.sellerName)}</div>
       </div>
     </div>
-  `).join('');
+  `;
+}
+function renderMarket(){
+  document.getElementById('marketHint').textContent = `${allListings.length} anúncios`;
+  const grid = document.getElementById('marketGrid');
+  if (allListings.length === 0){
+    grid.innerHTML = '<div class="empty-grid">Nenhum item à venda ainda.</div>';
+    return;
+  }
+  grid.innerHTML = allListings.map(marketCardHtml).join('');
 }
 
 // ==================== BUSINESS ====================
@@ -2490,13 +2701,8 @@ socket.on('new_biz_post', (post) => {
   allBizPosts.unshift(post);
   renderBizList();
 });
-function renderBizList(){
-  const el = document.getElementById('bizList');
-  if (allBizPosts.length === 0){
-    el.innerHTML = '<div class="empty-grid">Ninguém divulgou nada ainda. Seja o primeiro! 💼</div>';
-    return;
-  }
-  el.innerHTML = allBizPosts.map(b => `
+function bizCardHtml(b){
+  return `
     <div class="biz-card">
       ${b.image ? `<img src="${b.image}" />` : ''}
       <div class="b-body">
@@ -2509,7 +2715,15 @@ function renderBizList(){
         </div>
       </div>
     </div>
-  `).join('');
+  `;
+}
+function renderBizList(){
+  const el = document.getElementById('bizList');
+  if (allBizPosts.length === 0){
+    el.innerHTML = '<div class="empty-grid">Ninguém divulgou nada ainda. Seja o primeiro! 💼</div>';
+    return;
+  }
+  el.innerHTML = allBizPosts.map(bizCardHtml).join('');
 }
 
 // ==================== MENSAGENS (estilo MSN) ====================
